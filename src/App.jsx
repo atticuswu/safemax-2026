@@ -13,7 +13,8 @@ import {
   ArrowRightLeft,
   Lock,
   X,
-  Mail
+  Mail,
+  Info
 } from 'lucide-react';
 import './index.css';
 
@@ -424,6 +425,52 @@ const App = () => {
                 >
                   <Zap size={16} /> 開始計算
                 </button>
+              </div>
+            </section>
+
+            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 text-sm text-slate-600">
+              <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
+                <Info size={16} className="text-indigo-500" /> 策略說明
+              </h3>
+
+              <div className="space-y-1">
+                <p className="font-bold text-slate-700">📌 核心底層：SAFEMAX 4.7%</p>
+                <p>根據 Bill Bengen 2025 研究，4.7% 是通過百年壓力測試（含大蕭條、惡性通膨）的安全最大提領率地板。本策略以此為基礎，每年依<span className="font-bold text-orange-500">當年 CAPE</span>動態重算支出，市場漲多花多、市場跌自動縮減，切斷熊市持續失血的惡性循環。</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="font-bold text-slate-700">💡 動態提領率（每年重算）</p>
+                <p className="text-xs text-slate-400 mb-1">當年支出 = 當年市值 × CAPE 對應 SWR</p>
+                <ul className="text-xs text-slate-500 pl-3 space-y-0.5 list-disc list-inside">
+                  <li>CAPE &gt; 30（昂貴）→ <span className="font-bold text-rose-500">4.7%</span> 防守</li>
+                  <li>CAPE 15–30（合理）→ <span className="font-bold text-amber-500">5.2%</span> 標準</li>
+                  <li>CAPE ≤ 15（便宜）→ <span className="font-bold text-emerald-600">6.0%</span> 進攻</li>
+                </ul>
+              </div>
+
+              <div className="space-y-1">
+                <p className="font-bold text-slate-700">🏦 質押借款取代賣股</p>
+                <p>退休後以 ETF（0050/006208）向券商質押借款支應生活費，確保股數不減少，完整享受複利與除權息。股息收益率需大於質押利率，利息自動清償不滾雪球。</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="font-bold text-slate-700">🛡 雙重護欄（任一觸發切換賣股）</p>
+                <ul className="text-xs text-slate-500 pl-3 space-y-0.5 list-disc list-inside">
+                  <li><span className="font-bold">維持率護欄：</span>市值 / 借款 &lt; 300%</li>
+                  <li><span className="font-bold">債務天花板：</span>借款 ≥ 初始資產 × 25%</li>
+                </ul>
+                <p className="text-xs text-slate-400 mt-1">賣股時先用股息抵利息，剩餘缺口才賣股。護欄解除後自動恢復質押。</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="font-bold text-slate-700">⚙️ 操作步驟</p>
+                <ol className="text-xs text-slate-500 pl-3 space-y-0.5 list-decimal list-inside">
+                  <li>填入初始資產、退休年齡、預期壽命</li>
+                  <li>調整股息率與質押利率</li>
+                  <li>設定維持率門檻與借款上限 %</li>
+                  <li>選歷史起點（或理論模式）</li>
+                  <li>點「開始計算」查看結果</li>
+                </ol>
               </div>
             </section>
           </aside>
