@@ -148,7 +148,14 @@ const App = () => {
       }
 
       currentPortfolio = currentPortfolio * (1 + annualRet / 100);
-      currentSpending = currentPortfolio * (suggestedSWR / 100);
+
+      // 動態提領：每年依當年 CAPE 重新計算 SWR
+      const nextYearLabel = startYear + i + 1;
+      const nextCape = mode === 'historical'
+        ? (HISTORICAL_DATA[nextYearLabel] || HISTORICAL_DATA[2023]).cape
+        : capeRatio;
+      const nextSWR = nextCape > 30 ? 4.7 : nextCape > 15 ? 5.2 : 6.0;
+      currentSpending = currentPortfolio * (nextSWR / 100);
 
       if (currentPortfolio <= 0) {
         currentPortfolio = 0;
