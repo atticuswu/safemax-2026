@@ -72,10 +72,9 @@ const App = () => {
 
   const suggestedSWR = useMemo(() => {
     const cape = Number(capeRatio) || 0;
-    if (cape > 35) return 4.0;
-    if (cape > 25) return 4.7;
-    if (cape > 17) return 5.2;
-    return 6.0;
+    if (cape > 30) return 4.7;   // 昂貴：防守模式
+    if (cape > 15) return 5.2;   // 合理：標準模式 (5.0–5.5% 中間值)
+    return 6.0;                   // 便宜：進攻模式
   }, [capeRatio]);
 
   const initialSpending = useMemo(() => {
@@ -149,7 +148,7 @@ const App = () => {
       }
 
       currentPortfolio = currentPortfolio * (1 + annualRet / 100);
-      currentSpending = currentSpending * (1 + annualInf / 100);
+      currentSpending = currentPortfolio * (suggestedSWR / 100);
 
       if (currentPortfolio <= 0) {
         currentPortfolio = 0;
@@ -157,7 +156,7 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold]);
 
   const latestData = simulationData[simulationData.length - 1];
 
@@ -266,6 +265,10 @@ const App = () => {
           <main className="lg:col-span-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatCard title="終局淨資產" value={`$${latestData.netAssets.toLocaleString()}`} color={latestData.netAssets < 0 ? "text-rose-600" : "text-emerald-600"} />
+              <StatCard title="終局資產市值" value={`$${latestData.portfolio.toLocaleString()}`} color="text-indigo-600" />
+              <StatCard title="終局累積債務" value={`$${latestData.debt.toLocaleString()}`} color={latestData.debt > 0 ? "text-rose-500" : "text-slate-400"} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">護欄模式觸發狀態</p>
                 <div className="flex items-center gap-2 mt-2">
