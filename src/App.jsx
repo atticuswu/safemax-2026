@@ -33,6 +33,44 @@ const HISTORICAL_DATA = {
   2021: { ret: 28.71, cpi: 4.70, cape: 36.9 }, 2022: { ret: -18.11, cpi: 8.00, cape: 34.2 }, 2023: { ret: 26.29, cpi: 4.10, cape: 29.8 }
 };
 
+// VT：2008前用 MSCI World 代理，2008後為 VT 實際報酬；CPI 使用美國 CPI
+const VT_DATA = {
+  1966: { ret: -3.5, cpi: 3.01 }, 1967: { ret: 21.5, cpi: 2.78 }, 1968: { ret: 17.0, cpi: 4.27 }, 1969: { ret: -9.0, cpi: 5.46 }, 1970: { ret: 0.5, cpi: 5.92 },
+  1971: { ret: 24.0, cpi: 4.30 }, 1972: { ret: 35.0, cpi: 3.27 }, 1973: { ret: -13.5, cpi: 6.22 }, 1974: { ret: -22.5, cpi: 11.04 }, 1975: { ret: 37.0, cpi: 9.14 },
+  1976: { ret: 12.0, cpi: 5.74 }, 1977: { ret: 19.0, cpi: 6.50 }, 1978: { ret: 34.0, cpi: 7.62 }, 1979: { ret: 15.0, cpi: 11.25 }, 1980: { ret: 24.0, cpi: 13.58 },
+  1981: { ret: -4.0, cpi: 10.33 }, 1982: { ret: 10.0, cpi: 6.13 }, 1983: { ret: 22.0, cpi: 3.21 }, 1984: { ret: 5.0, cpi: 4.30 }, 1985: { ret: 41.0, cpi: 3.55 },
+  1986: { ret: 41.0, cpi: 1.91 }, 1987: { ret: 15.5, cpi: 3.66 }, 1988: { ret: 23.0, cpi: 4.08 }, 1989: { ret: 17.0, cpi: 4.83 }, 1990: { ret: -17.0, cpi: 5.40 },
+  1991: { ret: 19.0, cpi: 4.23 }, 1992: { ret: -5.0, cpi: 3.03 }, 1993: { ret: 23.0, cpi: 2.95 }, 1994: { ret: 5.0, cpi: 2.61 }, 1995: { ret: 21.0, cpi: 2.81 },
+  1996: { ret: 14.0, cpi: 2.93 }, 1997: { ret: 16.0, cpi: 2.34 }, 1998: { ret: 25.0, cpi: 1.55 }, 1999: { ret: 25.0, cpi: 2.19 }, 2000: { ret: -13.0, cpi: 3.38 },
+  2001: { ret: -17.0, cpi: 2.83 }, 2002: { ret: -19.5, cpi: 1.59 }, 2003: { ret: 33.5, cpi: 2.27 }, 2004: { ret: 15.0, cpi: 2.68 }, 2005: { ret: 10.0, cpi: 3.39 },
+  2006: { ret: 21.0, cpi: 3.23 }, 2007: { ret: 9.0, cpi: 2.85 }, 2008: { ret: -42.3, cpi: 3.85 }, 2009: { ret: 34.6, cpi: -0.34 }, 2010: { ret: 13.0, cpi: 1.64 },
+  2011: { ret: -7.7, cpi: 3.16 }, 2012: { ret: 17.0, cpi: 2.07 }, 2013: { ret: 23.3, cpi: 1.46 }, 2014: { ret: 3.7, cpi: 1.62 }, 2015: { ret: -1.8, cpi: 0.12 },
+  2016: { ret: 8.7, cpi: 1.26 }, 2017: { ret: 24.6, cpi: 2.13 }, 2018: { ret: -9.7, cpi: 2.44 }, 2019: { ret: 27.7, cpi: 1.81 }, 2020: { ret: 17.0, cpi: 1.23 },
+  2021: { ret: 19.0, cpi: 4.70 }, 2022: { ret: -18.4, cpi: 8.00 }, 2023: { ret: 23.9, cpi: 4.10 }
+};
+
+// 0050：2003前用台灣加權指數代理，2003後為 0050 實際報酬；CPI 使用台灣 CPI
+const TAIWAN_DATA = {
+  1966: { ret: 10.0, cpi: 3.0 }, 1967: { ret: 15.0, cpi: 3.5 }, 1968: { ret: 20.0, cpi: 7.8 }, 1969: { ret: -5.0, cpi: 5.2 }, 1970: { ret: -8.0, cpi: 3.6 },
+  1971: { ret: 32.0, cpi: 2.8 }, 1972: { ret: 48.0, cpi: 4.5 }, 1973: { ret: -38.0, cpi: 8.2 }, 1974: { ret: -20.0, cpi: 47.5 }, 1975: { ret: 55.0, cpi: 5.2 },
+  1976: { ret: 28.0, cpi: 2.5 }, 1977: { ret: -12.0, cpi: 7.0 }, 1978: { ret: 22.0, cpi: 5.8 }, 1979: { ret: 12.0, cpi: 9.8 }, 1980: { ret: 28.0, cpi: 19.0 },
+  1981: { ret: -18.0, cpi: 16.3 }, 1982: { ret: 7.0, cpi: 3.0 }, 1983: { ret: 32.0, cpi: 1.4 }, 1984: { ret: 8.0, cpi: 0.0 }, 1985: { ret: 5.0, cpi: -0.2 },
+  1986: { ret: 90.0, cpi: 0.7 }, 1987: { ret: -19.0, cpi: 0.5 }, 1988: { ret: 119.0, cpi: 1.3 }, 1989: { ret: 85.0, cpi: 4.4 }, 1990: { ret: -53.0, cpi: 4.1 },
+  1991: { ret: 6.5, cpi: 3.6 }, 1992: { ret: -25.0, cpi: 4.5 }, 1993: { ret: 79.0, cpi: 2.9 }, 1994: { ret: 17.0, cpi: 4.1 }, 1995: { ret: -27.0, cpi: 3.7 },
+  1996: { ret: 34.0, cpi: 3.1 }, 1997: { ret: -2.5, cpi: 0.9 }, 1998: { ret: -22.0, cpi: 1.7 }, 1999: { ret: 31.0, cpi: 0.2 }, 2000: { ret: -44.0, cpi: 1.3 },
+  2001: { ret: 17.0, cpi: 0.0 }, 2002: { ret: -20.0, cpi: -0.2 }, 2003: { ret: 32.5, cpi: -0.3 }, 2004: { ret: 4.0, cpi: 1.6 }, 2005: { ret: 7.2, cpi: 2.3 },
+  2006: { ret: 19.7, cpi: 0.6 }, 2007: { ret: 9.5, cpi: 1.8 }, 2008: { ret: -46.0, cpi: 3.5 }, 2009: { ret: 78.0, cpi: -0.9 }, 2010: { ret: 10.5, cpi: 1.0 },
+  2011: { ret: -21.5, cpi: 1.4 }, 2012: { ret: 12.0, cpi: 1.9 }, 2013: { ret: 11.8, cpi: 0.8 }, 2014: { ret: 8.9, cpi: 1.2 }, 2015: { ret: -7.1, cpi: -0.3 },
+  2016: { ret: 14.1, cpi: 1.4 }, 2017: { ret: 15.6, cpi: 0.6 }, 2018: { ret: -9.1, cpi: 1.4 }, 2019: { ret: 33.0, cpi: 0.6 }, 2020: { ret: 22.4, cpi: -0.2 },
+  2021: { ret: 22.9, cpi: 2.0 }, 2022: { ret: -22.6, cpi: 3.0 }, 2023: { ret: 26.3, cpi: 2.5 }
+};
+
+const ASSET_CONFIG = {
+  SPY: { label: 'SPY', sublabel: 'S&P 500', color: '#6366f1', proxyNote: null },
+  VT:  { label: 'VT',  sublabel: '全球股市', color: '#0891b2', proxyNote: '2008前採 MSCI World 代理' },
+  '0050': { label: '0050', sublabel: '台灣50', color: '#059669', proxyNote: '2003前採台灣加權指數代理' },
+};
+
 const App = () => {
   const [mode, setMode] = useState('historical');
   const [startYear, setStartYear] = useState(1999);
@@ -49,6 +87,7 @@ const App = () => {
   const [calcVersion, setCalcVersion] = useState(0);
   const [capeCondition, setCapeCondition] = useState('none'); // 'none' | 'lt' | 'gt'
   const [capeConditionValue, setCapeConditionValue] = useState(25);
+  const [assetType, setAssetType] = useState('SPY');
   const [showSubscribe, setShowSubscribe] = useState(false);
   const [subEmail, setSubEmail] = useState('');
   const [subStatus, setSubStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
@@ -145,6 +184,7 @@ const App = () => {
       const currentAge = rAge + i;
 
       const maintenanceRatio = accumulatedDebt === 0 ? Infinity : (currentPortfolio / accumulatedDebt) * 100;
+      // CAPE 固定用美股 Shiller CAPE（所有資產的 SWR 參考基準）
       const currentCape = mode === 'historical' ? (HISTORICAL_DATA[yearLabel] || HISTORICAL_DATA[2023]).cape : capeRatio;
       const capeBlocked = capeCondition === 'lt' ? currentCape >= capeConditionValue
                         : capeCondition === 'gt' ? currentCape <= capeConditionValue
@@ -190,7 +230,9 @@ const App = () => {
 
       let annualRet, annualInf;
       if (mode === 'historical') {
-        const hData = HISTORICAL_DATA[yearLabel] || HISTORICAL_DATA[2023];
+        const dataSource = assetType === 'VT' ? VT_DATA : assetType === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
+        const fallback = assetType === 'VT' ? VT_DATA[2023] : assetType === '0050' ? TAIWAN_DATA[2023] : HISTORICAL_DATA[2023];
+        const hData = dataSource[yearLabel] || fallback;
         annualRet = hData.ret;
         annualInf = hData.cpi;
       } else {
@@ -214,7 +256,7 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType]);
 
   const latestData = simulationData[simulationData.length - 1];
 
@@ -305,6 +347,27 @@ const App = () => {
               </h3>
 
               <div className="space-y-6">
+                {/* 資產選擇 */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-600 uppercase">回測指數</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {Object.entries(ASSET_CONFIG).map(([key, cfg]) => (
+                      <button
+                        key={key}
+                        onClick={() => setAssetType(key)}
+                        className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${assetType === key ? 'text-white shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}
+                        style={assetType === key ? { backgroundColor: cfg.color, borderColor: cfg.color } : {}}
+                      >
+                        <div>{cfg.label}</div>
+                        <div className="font-medium opacity-80">{cfg.sublabel}</div>
+                      </button>
+                    ))}
+                  </div>
+                  {ASSET_CONFIG[assetType].proxyNote && (
+                    <p className="text-[10px] text-slate-400 italic">⚠ {ASSET_CONFIG[assetType].proxyNote}</p>
+                  )}
+                </div>
+
                 <InputGroup
                   label="初始資產總額 (TWD)"
                   value={portfolioValue}
