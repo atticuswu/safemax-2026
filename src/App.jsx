@@ -10,7 +10,8 @@ import {
   DollarSign,
   Calendar,
   Zap,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Lock
 } from 'lucide-react';
 import './index.css';
 
@@ -35,12 +36,16 @@ const App = () => {
   const [yearInputStr, setYearInputStr] = useState('1999');
   const [portfolioValue, setPortfolioValue] = useState(10000000);
   const [capeRatio, setCapeRatio] = useState(30);
-  const [dividendYield, setDividendYield] = useState(4.0);
+  const [dividendYield, setDividendYield] = useState(3.0);
   const [interestRate, setInterestRate] = useState(2.5);
-  const [retirementAge, setRetirementAge] = useState(65);
-  const [deathAge, setDeathAge] = useState(95);
+  const [retirementAge, setRetirementAge] = useState(50);
+  const [deathAge, setDeathAge] = useState(79);
   const [maintenanceThreshold, setMaintenanceThreshold] = useState(300);
+  const [maxDebtRatio, setMaxDebtRatio] = useState(25);
   const [theoreticalGrowth, setTheoreticalGrowth] = useState(5.0);
+  const [calcVersion, setCalcVersion] = useState(0);
+  const [capeCondition, setCapeCondition] = useState('none'); // 'none' | 'lt' | 'gt'
+  const [capeConditionValue, setCapeConditionValue] = useState(25);
 
   const handleYearInputChange = (val) => {
     setYearInputStr(val);
@@ -89,6 +94,8 @@ const App = () => {
     const iRate = Number(interestRate) || 0;
     const tGrowth = Number(theoreticalGrowth) || 0;
     const mThreshold = Number(maintenanceThreshold) || 300;
+    const maxDebtRatioNum = maxDebtRatio === '' ? 25 : Number(maxDebtRatio);
+    const maxDebt = pv * (maxDebtRatioNum / 100);
 
     let currentPortfolio = pv;
     let accumulatedDebt = 0;
@@ -100,7 +107,12 @@ const App = () => {
       const currentAge = rAge + i;
 
       const maintenanceRatio = accumulatedDebt === 0 ? Infinity : (currentPortfolio / accumulatedDebt) * 100;
-      const isGuardrailMode = maintenanceRatio < mThreshold;
+      const currentCape = mode === 'historical' ? (HISTORICAL_DATA[yearLabel] || HISTORICAL_DATA[2023]).cape : capeRatio;
+      const capeBlocked = capeCondition === 'lt' ? currentCape >= capeConditionValue
+                        : capeCondition === 'gt' ? currentCape <= capeConditionValue
+                        : false;
+      const isGuardrailMode = maintenanceRatio < mThreshold || accumulatedDebt >= maxDebt || capeBlocked;
+      const guardrailReason = capeBlocked ? "cape" : accumulatedDebt >= maxDebt ? "debt-cap" : maintenanceRatio < mThreshold ? "maintenance" : null;
       const strategy = isGuardrailMode ? "Sell Shares" : "Lending";
 
       const dividends = currentPortfolio * (dYield / 100);
@@ -122,6 +134,7 @@ const App = () => {
         maintenance: maintenanceRatio === Infinity ? 5000 : Math.round(maintenanceRatio),
         spending: Math.round(currentSpending),
         strategy: strategy,
+        guardrailReason: guardrailReason,
         cape: capeVal,
         withdrawalPct: withdrawalPct,
       });
@@ -163,9 +176,12 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio]);
 
   const latestData = simulationData[simulationData.length - 1];
+
+  const lendingYears = simulationData.filter(d => d.strategy === 'Lending').map(d => d.year);
+  const sellYears = simulationData.filter(d => d.strategy === 'Sell Shares').map(d => d.year);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-900">
@@ -242,6 +258,53 @@ const App = () => {
                    <p className="text-[10px] text-slate-400 italic">當維持率低於此數值，將停止借款改為賣股。</p>
                 </div>
 
+                <div className="space-y-1">
+                   <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                     <Lock size={12} className="text-rose-500" /> 累積借款上限 (初始資產 %)
+                   </label>
+                   <input
+                      type="number"
+                      value={maxDebtRatio}
+                      onChange={(e) => setMaxDebtRatio(e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full p-2 bg-rose-50 border border-rose-200 text-rose-900 rounded-lg font-black focus:ring-2 focus:ring-rose-500 outline-none"
+                   />
+                   <p className="text-[10px] text-slate-400 italic">
+                     上限 = ${((Number(portfolioValue)||0) * (Number(maxDebtRatio)||25) / 100).toLocaleString()}｜超過後轉賣股，回落後恢復質押。
+                   </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                    <AlertTriangle size={12} className="text-orange-400" /> 質押 CAPE 條件
+                  </label>
+                  <div className="flex gap-2">
+                    {[
+                      { val: 'none', label: '不限' },
+                      { val: 'lt',   label: 'CAPE <' },
+                      { val: 'gt',   label: 'CAPE >' },
+                    ].map(opt => (
+                      <button
+                        key={opt.val}
+                        onClick={() => setCapeCondition(opt.val)}
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${capeCondition === opt.val ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {capeCondition !== 'none' && (
+                    <input
+                      type="number"
+                      value={capeConditionValue}
+                      onChange={(e) => setCapeConditionValue(e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full p-2 bg-orange-50 border border-orange-200 text-orange-900 rounded-lg font-black focus:ring-2 focus:ring-orange-400 outline-none text-center"
+                    />
+                  )}
+                  <p className="text-[10px] text-slate-400 italic">
+                    {capeCondition === 'none' ? '無論 CAPE 高低均可質押。' : capeCondition === 'lt' ? `僅當 CAPE < ${capeConditionValue} 時才質押（市場合理/低估時借款）。` : `僅當 CAPE > ${capeConditionValue} 時才質押。`}
+                  </p>
+                </div>
+
                 {mode === 'historical' ? (
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-600 flex items-center gap-2">
@@ -265,6 +328,13 @@ const App = () => {
                   <SliderGroup label="股息率" value={dividendYield} min={0} max={8} step={0.1} onChange={setDividendYield} suffix="%" />
                   <SliderGroup label="質押利率" value={interestRate} min={1} max={8} step={0.1} onChange={setInterestRate} suffix="%" />
                 </div>
+
+                <button
+                  onClick={() => setCalcVersion(v => v + 1)}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <Zap size={16} /> 開始計算
+                </button>
               </div>
             </section>
           </aside>
@@ -291,6 +361,23 @@ const App = () => {
                 </div>
               </div>
               <StatCard title="終局維持率" value={latestData.maintenance === 5000 ? "∞" : `${latestData.maintenance}%`} color={latestData.maintenance < Number(maintenanceThreshold) ? "text-rose-600" : "text-indigo-600"} />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-indigo-100">
+                <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider">質押年度</p>
+                <h4 className="text-2xl font-black text-indigo-600 mt-1">{lendingYears.length} 年</h4>
+                <p className="text-[11px] text-slate-400 mt-2 leading-relaxed break-words">
+                  {lendingYears.length > 0 ? lendingYears.join('、') : '無'}
+                </p>
+              </div>
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+                <p className="text-xs font-bold text-amber-500 uppercase tracking-wider">賣股年度</p>
+                <h4 className="text-2xl font-black text-amber-600 mt-1">{sellYears.length} 年</h4>
+                <p className="text-[11px] text-slate-400 mt-2 leading-relaxed break-words">
+                  {sellYears.length > 0 ? sellYears.join('、') : '無'}
+                </p>
+              </div>
             </div>
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -321,12 +408,13 @@ const App = () => {
                             <div className="bg-white p-4 rounded-xl shadow-xl border border-slate-100">
                               <p className="font-black text-slate-800 border-b pb-2 mb-2">{label} 歲 ({d.year}年)</p>
                               <div className="space-y-1 text-sm">
-                                <div className="flex justify-between gap-4"><span>策略模式：</span><span className={`font-bold ${d.strategy === 'Sell Shares' ? 'text-amber-600' : 'text-indigo-600'}`}>{d.strategy === 'Sell Shares' ? '變賣模式' : '質押模式'}</span></div>
+                                <div className="flex justify-between gap-4"><span>策略模式：</span><span className={`font-bold ${d.strategy === 'Sell Shares' ? 'text-amber-600' : 'text-indigo-600'}`}>{d.strategy === 'Sell Shares' ? `變賣模式（${d.guardrailReason === 'debt-cap' ? '借款上限' : d.guardrailReason === 'cape' ? 'CAPE條件' : '維持率'}）` : '質押模式'}</span></div>
                                 <div className="flex justify-between gap-4"><span>股票市值：</span><span className="font-bold">${d.portfolio.toLocaleString()}</span></div>
                                 <div className="flex justify-between gap-4"><span>累積負債：</span><span className="font-bold text-rose-500">${d.debt.toLocaleString()}</span></div>
                                 <div className="flex justify-between gap-4 border-t pt-2"><span>淨資產：</span><span className="font-bold text-emerald-600">${d.netAssets.toLocaleString()}</span></div>
                                 {d.cape != null && <div className="flex justify-between gap-4"><span>CAPE：</span><span className="font-bold text-orange-500">{d.cape}</span></div>}
                                 {d.withdrawalPct != null && <div className="flex justify-between gap-4"><span>提領率：</span><span className="font-bold text-teal-600">{d.withdrawalPct}%</span></div>}
+                                {d.spending != null && <div className="flex justify-between gap-4"><span>提領金額：</span><span className="font-bold text-teal-700">${d.spending.toLocaleString()}</span></div>}
                               </div>
                             </div>
                           );
@@ -361,6 +449,7 @@ const App = () => {
                                 <p className="font-black text-slate-800 border-b pb-1 mb-2">{label} 年</p>
                                 <div className="flex justify-between gap-4"><span className="text-orange-500">CAPE：</span><span className="font-bold">{d?.cape ?? '—'}</span></div>
                                 <div className="flex justify-between gap-4"><span className="text-teal-600">提領率：</span><span className="font-bold">{d?.withdrawalPct != null ? `${d.withdrawalPct}%` : '—'}</span></div>
+                                <div className="flex justify-between gap-4"><span className="text-teal-700">提領金額：</span><span className="font-bold">{d?.spending != null ? `$${d.spending.toLocaleString()}` : '—'}</span></div>
                               </div>
                             );
                           }
