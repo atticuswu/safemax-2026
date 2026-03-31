@@ -11,7 +11,9 @@ import {
   Calendar,
   Zap,
   ArrowRightLeft,
-  Lock
+  Lock,
+  X,
+  Mail
 } from 'lucide-react';
 import './index.css';
 
@@ -46,6 +48,9 @@ const App = () => {
   const [calcVersion, setCalcVersion] = useState(0);
   const [capeCondition, setCapeCondition] = useState('none'); // 'none' | 'lt' | 'gt'
   const [capeConditionValue, setCapeConditionValue] = useState(25);
+  const [showSubscribe, setShowSubscribe] = useState(false);
+  const [subEmail, setSubEmail] = useState('');
+  const [subStatus, setSubStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
 
   const handleYearInputChange = (val) => {
     setYearInputStr(val);
@@ -67,6 +72,38 @@ const App = () => {
       setCapeRatio(HISTORICAL_DATA[startYear].cape);
     }
   }, [startYear, mode]);
+
+  useEffect(() => {
+    const seen = localStorage.getItem('safemax_subscribe_seen');
+    if (!seen) {
+      setShowSubscribe(true);
+    }
+  }, []);
+
+  const handleCloseSubscribe = () => {
+    setShowSubscribe(false);
+    localStorage.setItem('safemax_subscribe_seen', '1');
+  };
+
+  const handleSubscribe = async () => {
+    if (!subEmail || !subEmail.includes('@')) return;
+    setSubStatus('loading');
+    try {
+      const res = await fetch('https://substackapi.com/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: subEmail, domain: 'atticus.tw', publication_id: 3045941 }),
+      });
+      if (res.ok) {
+        setSubStatus('success');
+        setTimeout(() => handleCloseSubscribe(), 2000);
+      } else {
+        setSubStatus('error');
+      }
+    } catch {
+      setSubStatus('error');
+    }
+  };
 
   const yearsToSimulate = useMemo(() => {
     const rAge = Number(retirementAge) || 0;
@@ -185,6 +222,58 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-900">
+
+      {/* 訂閱電子報 Popup */}
+      {showSubscribe && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{backgroundColor: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)'}}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+            <button onClick={handleCloseSubscribe} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col items-center text-center mb-6">
+              <img src="/opup-hero.jpg" alt="顯二的長效價值" className="w-full rounded-xl mb-4 object-cover max-h-48" />
+              <h2 className="text-xl font-black text-slate-800 mb-1">顯二的長效價值</h2>
+              <p className="text-sm text-slate-400 font-medium">拉長人生的槓桿</p>
+            </div>
+
+            <p className="text-sm text-slate-600 leading-relaxed mb-6 text-center">
+              謝謝你從顯二的電子報或者是臉書來到這個退休金回測網站！歡迎訂閱我的電子報，投資、讀書心得以及趨勢科技都會在這裡分享喔！
+            </p>
+
+            {subStatus === 'success' ? (
+              <div className="bg-emerald-50 text-emerald-700 font-bold text-center py-4 rounded-xl">
+                🎉 訂閱成功！感謝你的支持！
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="輸入你的 Email..."
+                    value={subEmail}
+                    onChange={(e) => setSubEmail(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }}
+                    className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    onClick={handleSubscribe}
+                    disabled={subStatus === 'loading'}
+                    className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all disabled:opacity-60"
+                  >
+                    {subStatus === 'loading' ? '...' : '訂閱'}
+                  </button>
+                </div>
+                {subStatus === 'error' && (
+                  <p className="text-rose-500 text-xs mt-2 text-center">訂閱失敗，請直接前往 <a href="https://atticus.tw/subscribe" target="_blank" className="underline">atticus.tw/subscribe</a> 訂閱</p>
+                )}
+                <p className="text-[10px] text-slate-400 text-center mt-3">Over 1,000 subscribers · 隨時可取消訂閱</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
 
         <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
