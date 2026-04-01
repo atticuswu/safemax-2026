@@ -50,19 +50,20 @@ const VT_DATA = {
 };
 
 // 0050：2003前用台灣加權指數代理，2003後為 0050 實際報酬；CPI 使用台灣 CPI
+// pe：台灣市場歷史本益比（TAIEX/0050 估算；2003前為加權指數代理）
 const TAIWAN_DATA = {
-  1966: { ret: 10.0, cpi: 3.0 }, 1967: { ret: 15.0, cpi: 3.5 }, 1968: { ret: 20.0, cpi: 7.8 }, 1969: { ret: -5.0, cpi: 5.2 }, 1970: { ret: -8.0, cpi: 3.6 },
-  1971: { ret: 32.0, cpi: 2.8 }, 1972: { ret: 48.0, cpi: 4.5 }, 1973: { ret: -38.0, cpi: 8.2 }, 1974: { ret: -20.0, cpi: 47.5 }, 1975: { ret: 55.0, cpi: 5.2 },
-  1976: { ret: 28.0, cpi: 2.5 }, 1977: { ret: -12.0, cpi: 7.0 }, 1978: { ret: 22.0, cpi: 5.8 }, 1979: { ret: 12.0, cpi: 9.8 }, 1980: { ret: 28.0, cpi: 19.0 },
-  1981: { ret: -18.0, cpi: 16.3 }, 1982: { ret: 7.0, cpi: 3.0 }, 1983: { ret: 32.0, cpi: 1.4 }, 1984: { ret: 8.0, cpi: 0.0 }, 1985: { ret: 5.0, cpi: -0.2 },
-  1986: { ret: 90.0, cpi: 0.7 }, 1987: { ret: -19.0, cpi: 0.5 }, 1988: { ret: 119.0, cpi: 1.3 }, 1989: { ret: 85.0, cpi: 4.4 }, 1990: { ret: -53.0, cpi: 4.1 },
-  1991: { ret: 6.5, cpi: 3.6 }, 1992: { ret: -25.0, cpi: 4.5 }, 1993: { ret: 79.0, cpi: 2.9 }, 1994: { ret: 17.0, cpi: 4.1 }, 1995: { ret: -27.0, cpi: 3.7 },
-  1996: { ret: 34.0, cpi: 3.1 }, 1997: { ret: -2.5, cpi: 0.9 }, 1998: { ret: -22.0, cpi: 1.7 }, 1999: { ret: 31.0, cpi: 0.2 }, 2000: { ret: -44.0, cpi: 1.3 },
-  2001: { ret: 17.0, cpi: 0.0 }, 2002: { ret: -20.0, cpi: -0.2 }, 2003: { ret: 32.5, cpi: -0.3 }, 2004: { ret: 4.0, cpi: 1.6 }, 2005: { ret: 7.2, cpi: 2.3 },
-  2006: { ret: 19.7, cpi: 0.6 }, 2007: { ret: 9.5, cpi: 1.8 }, 2008: { ret: -46.0, cpi: 3.5 }, 2009: { ret: 78.0, cpi: -0.9 }, 2010: { ret: 10.5, cpi: 1.0 },
-  2011: { ret: -21.5, cpi: 1.4 }, 2012: { ret: 12.0, cpi: 1.9 }, 2013: { ret: 11.8, cpi: 0.8 }, 2014: { ret: 8.9, cpi: 1.2 }, 2015: { ret: -7.1, cpi: -0.3 },
-  2016: { ret: 14.1, cpi: 1.4 }, 2017: { ret: 15.6, cpi: 0.6 }, 2018: { ret: -9.1, cpi: 1.4 }, 2019: { ret: 33.0, cpi: 0.6 }, 2020: { ret: 22.4, cpi: -0.2 },
-  2021: { ret: 22.9, cpi: 2.0 }, 2022: { ret: -22.6, cpi: 3.0 }, 2023: { ret: 26.3, cpi: 2.5 }
+  1966: { ret: 10.0,  cpi: 3.0,  pe: 8  }, 1967: { ret: 15.0,  cpi: 3.5,  pe: 9  }, 1968: { ret: 20.0,  cpi: 7.8,  pe: 11 }, 1969: { ret: -5.0,  cpi: 5.2,  pe: 9  }, 1970: { ret: -8.0,  cpi: 3.6,  pe: 8  },
+  1971: { ret: 32.0,  cpi: 2.8,  pe: 10 }, 1972: { ret: 48.0,  cpi: 4.5,  pe: 15 }, 1973: { ret: -38.0, cpi: 8.2,  pe: 8  }, 1974: { ret: -20.0, cpi: 47.5, pe: 7  }, 1975: { ret: 55.0,  cpi: 5.2,  pe: 9  },
+  1976: { ret: 28.0,  cpi: 2.5,  pe: 11 }, 1977: { ret: -12.0, cpi: 7.0,  pe: 10 }, 1978: { ret: 22.0,  cpi: 5.8,  pe: 12 }, 1979: { ret: 12.0,  cpi: 9.8,  pe: 13 }, 1980: { ret: 28.0,  cpi: 19.0, pe: 14 },
+  1981: { ret: -18.0, cpi: 16.3, pe: 11 }, 1982: { ret: 7.0,   cpi: 3.0,  pe: 9  }, 1983: { ret: 32.0,  cpi: 1.4,  pe: 12 }, 1984: { ret: 8.0,   cpi: 0.0,  pe: 11 }, 1985: { ret: 5.0,   cpi: -0.2, pe: 10 },
+  1986: { ret: 90.0,  cpi: 0.7,  pe: 18 }, 1987: { ret: -19.0, cpi: 0.5,  pe: 25 }, 1988: { ret: 119.0, cpi: 1.3,  pe: 55 }, 1989: { ret: 85.0,  cpi: 4.4,  pe: 75 }, 1990: { ret: -53.0, cpi: 4.1,  pe: 18 },
+  1991: { ret: 6.5,   cpi: 3.6,  pe: 18 }, 1992: { ret: -25.0, cpi: 4.5,  pe: 14 }, 1993: { ret: 79.0,  cpi: 2.9,  pe: 28 }, 1994: { ret: 17.0,  cpi: 4.1,  pe: 24 }, 1995: { ret: -27.0, cpi: 3.7,  pe: 18 },
+  1996: { ret: 34.0,  cpi: 3.1,  pe: 22 }, 1997: { ret: -2.5,  cpi: 0.9,  pe: 20 }, 1998: { ret: -22.0, cpi: 1.7,  pe: 17 }, 1999: { ret: 31.0,  cpi: 0.2,  pe: 25 }, 2000: { ret: -44.0, cpi: 1.3,  pe: 18 },
+  2001: { ret: 17.0,  cpi: 0.0,  pe: 18 }, 2002: { ret: -20.0, cpi: -0.2, pe: 14 }, 2003: { ret: 32.5,  cpi: -0.3, pe: 17 }, 2004: { ret: 4.0,   cpi: 1.6,  pe: 15 }, 2005: { ret: 7.2,   cpi: 2.3,  pe: 16 },
+  2006: { ret: 19.7,  cpi: 0.6,  pe: 18 }, 2007: { ret: 9.5,   cpi: 1.8,  pe: 20 }, 2008: { ret: -46.0, cpi: 3.5,  pe: 10 }, 2009: { ret: 78.0,  cpi: -0.9, pe: 25 }, 2010: { ret: 10.5,  cpi: 1.0,  pe: 17 },
+  2011: { ret: -21.5, cpi: 1.4,  pe: 13 }, 2012: { ret: 12.0,  cpi: 1.9,  pe: 15 }, 2013: { ret: 11.8,  cpi: 0.8,  pe: 16 }, 2014: { ret: 8.9,   cpi: 1.2,  pe: 16 }, 2015: { ret: -7.1,  cpi: -0.3, pe: 14 },
+  2016: { ret: 14.1,  cpi: 1.4,  pe: 15 }, 2017: { ret: 15.6,  cpi: 0.6,  pe: 17 }, 2018: { ret: -9.1,  cpi: 1.4,  pe: 12 }, 2019: { ret: 33.0,  cpi: 0.6,  pe: 20 }, 2020: { ret: 22.4,  cpi: -0.2, pe: 21 },
+  2021: { ret: 22.9,  cpi: 2.0,  pe: 20 }, 2022: { ret: -22.6, cpi: 3.0,  pe: 12 }, 2023: { ret: 26.3,  cpi: 2.5,  pe: 22 }
 };
 
 const ASSET_CONFIG = {
@@ -88,6 +89,7 @@ const App = () => {
   const [capeCondition, setCapeCondition] = useState('none'); // 'none' | 'lt' | 'gt'
   const [capeConditionValue, setCapeConditionValue] = useState(25);
   const [assetType, setAssetType] = useState('SPY');
+  const [valuationMetric, setValuationMetric] = useState('cape'); // 'cape' | 'pe'
   const [showSubscribe, setShowSubscribe] = useState(false);
   const [subEmail, setSubEmail] = useState('');
   const [subStatus, setSubStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
@@ -112,6 +114,11 @@ const App = () => {
       setCapeRatio(HISTORICAL_DATA[startYear].cape);
     }
   }, [startYear, mode]);
+
+  // 切換非 0050 資產時，估值指標自動回到 CAPE
+  useEffect(() => {
+    if (assetType !== '0050') setValuationMetric('cape');
+  }, [assetType]);
 
   useEffect(() => {
     const seen = localStorage.getItem('safemax_subscribe_seen');
@@ -153,11 +160,17 @@ const App = () => {
   }, [deathAge, retirementAge]);
 
   const suggestedSWR = useMemo(() => {
+    if (valuationMetric === 'pe' && assetType === '0050') {
+      const pe = mode === 'historical' ? ((TAIWAN_DATA[startYear] || TAIWAN_DATA[2023]).pe) : Number(capeRatio) || 20;
+      if (pe > 20) return 4.7;   // 昂貴：防守
+      if (pe > 13) return 5.2;   // 正常：標準
+      return 6.0;                  // 危機底部：進攻
+    }
     const cape = Number(capeRatio) || 0;
     if (cape > 30) return 4.7;   // 昂貴：防守模式
-    if (cape > 15) return 5.2;   // 合理：標準模式 (5.0–5.5% 中間值)
+    if (cape > 15) return 5.2;   // 合理：標準模式
     return 6.0;                   // 便宜：進攻模式
-  }, [capeRatio]);
+  }, [capeRatio, valuationMetric, assetType, mode, startYear]);
 
   const initialSpending = useMemo(() => {
     const pv = Number(portfolioValue) || 0;
@@ -186,11 +199,17 @@ const App = () => {
       const maintenanceRatio = accumulatedDebt === 0 ? Infinity : (currentPortfolio / accumulatedDebt) * 100;
       // CAPE 固定用美股 Shiller CAPE（所有資產的 SWR 參考基準）
       const currentCape = mode === 'historical' ? (HISTORICAL_DATA[yearLabel] || HISTORICAL_DATA[2023]).cape : capeRatio;
-      const capeBlocked = capeCondition === 'lt' ? currentCape >= capeConditionValue
-                        : capeCondition === 'gt' ? currentCape <= capeConditionValue
+      // 台灣 P/E（僅 0050 資產有效）
+      const currentPE = mode === 'historical' && assetType === '0050'
+        ? ((TAIWAN_DATA[yearLabel] || TAIWAN_DATA[2023]).pe)
+        : null;
+      // 質押條件使用的估值指標值
+      const metricValue = (valuationMetric === 'pe' && assetType === '0050') ? currentPE : currentCape;
+      const capeBlocked = capeCondition === 'lt' ? metricValue >= capeConditionValue
+                        : capeCondition === 'gt' ? metricValue <= capeConditionValue
                         : false;
       const isGuardrailMode = maintenanceRatio < mThreshold || accumulatedDebt >= maxDebt || capeBlocked;
-      const guardrailReason = capeBlocked ? "cape" : accumulatedDebt >= maxDebt ? "debt-cap" : maintenanceRatio < mThreshold ? "maintenance" : null;
+      const guardrailReason = capeBlocked ? "valuation" : accumulatedDebt >= maxDebt ? "debt-cap" : maintenanceRatio < mThreshold ? "maintenance" : null;
       const strategy = isGuardrailMode ? "Sell Shares" : "Lending";
 
       const dividends = currentPortfolio * (dYield / 100);
@@ -214,6 +233,7 @@ const App = () => {
         strategy: strategy,
         guardrailReason: guardrailReason,
         cape: capeVal,
+        pe: currentPE,
         withdrawalPct: withdrawalPct,
       });
 
@@ -242,12 +262,20 @@ const App = () => {
 
       currentPortfolio = currentPortfolio * (1 + annualRet / 100);
 
-      // 動態提領：每年依當年 CAPE 重新計算 SWR
+      // 動態提領：每年依當年估值指標（CAPE 或 P/E）重新計算 SWR
       const nextYearLabel = startYear + i + 1;
       const nextCape = mode === 'historical'
         ? (HISTORICAL_DATA[nextYearLabel] || HISTORICAL_DATA[2023]).cape
         : capeRatio;
-      const nextSWR = nextCape > 30 ? 4.7 : nextCape > 15 ? 5.2 : 6.0;
+      const nextPE = mode === 'historical' && assetType === '0050'
+        ? ((TAIWAN_DATA[nextYearLabel] || TAIWAN_DATA[2023]).pe)
+        : null;
+      let nextSWR;
+      if (valuationMetric === 'pe' && assetType === '0050' && nextPE != null) {
+        nextSWR = nextPE > 20 ? 4.7 : nextPE > 13 ? 5.2 : 6.0;
+      } else {
+        nextSWR = nextCape > 30 ? 4.7 : nextCape > 15 ? 5.2 : 6.0;
+      }
       currentSpending = currentPortfolio * (nextSWR / 100);
 
       if (currentPortfolio <= 0) {
@@ -256,7 +284,7 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric]);
 
   const latestData = simulationData[simulationData.length - 1];
 
@@ -368,6 +396,32 @@ const App = () => {
                   )}
                 </div>
 
+                {/* 估值指標選擇：僅 0050 可選 P/E */}
+                {assetType === '0050' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600 uppercase">估值指標</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setValuationMetric('cape')}
+                        className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${valuationMetric === 'cape' ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'}`}
+                      >
+                        <div>美股 CAPE</div>
+                        <div className="text-[10px] font-medium opacity-80">Shiller CAPE</div>
+                      </button>
+                      <button
+                        onClick={() => setValuationMetric('pe')}
+                        className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${valuationMetric === 'pe' ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300'}`}
+                      >
+                        <div>台灣 P/E</div>
+                        <div className="text-[10px] font-medium opacity-80">本益比</div>
+                      </button>
+                    </div>
+                    {valuationMetric === 'pe' && (
+                      <p className="text-[10px] text-emerald-600 italic">P/E &gt;20→4.7%　13-20→5.2%　≤13→6.0%</p>
+                    )}
+                  </div>
+                )}
+
                 <InputGroup
                   label="初始資產總額 (TWD)"
                   value={portfolioValue}
@@ -427,35 +481,42 @@ const App = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
-                    <AlertTriangle size={12} className="text-orange-400" /> 質押 CAPE 條件
-                  </label>
-                  <div className="flex gap-2">
-                    {[
-                      { val: 'none', label: '不限' },
-                      { val: 'lt',   label: 'CAPE <' },
-                      { val: 'gt',   label: 'CAPE >' },
-                    ].map(opt => (
-                      <button
-                        key={opt.val}
-                        onClick={() => setCapeCondition(opt.val)}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${capeCondition === opt.val ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'}`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  {capeCondition !== 'none' && (
-                    <input
-                      type="number"
-                      value={capeConditionValue}
-                      onChange={(e) => setCapeConditionValue(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full p-2 bg-orange-50 border border-orange-200 text-orange-900 rounded-lg font-black focus:ring-2 focus:ring-orange-400 outline-none text-center"
-                    />
-                  )}
-                  <p className="text-[10px] text-slate-400 italic">
-                    {capeCondition === 'none' ? '無論 CAPE 高低均可質押。' : capeCondition === 'lt' ? `僅當 CAPE < ${capeConditionValue} 時才質押（市場合理/低估時借款）。` : `僅當 CAPE > ${capeConditionValue} 時才質押。`}
-                  </p>
+                  {(() => {
+                    const metricLabel = (valuationMetric === 'pe' && assetType === '0050') ? 'P/E' : 'CAPE';
+                    return (
+                      <>
+                        <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                          <AlertTriangle size={12} className="text-orange-400" /> 質押{metricLabel}條件
+                        </label>
+                        <div className="flex gap-2">
+                          {[
+                            { val: 'none', label: '不限' },
+                            { val: 'lt',   label: `${metricLabel} <` },
+                            { val: 'gt',   label: `${metricLabel} >` },
+                          ].map(opt => (
+                            <button
+                              key={opt.val}
+                              onClick={() => setCapeCondition(opt.val)}
+                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${capeCondition === opt.val ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-slate-500 border-slate-200 hover:border-orange-300'}`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        {capeCondition !== 'none' && (
+                          <input
+                            type="number"
+                            value={capeConditionValue}
+                            onChange={(e) => setCapeConditionValue(e.target.value === '' ? '' : Number(e.target.value))}
+                            className="w-full p-2 bg-orange-50 border border-orange-200 text-orange-900 rounded-lg font-black focus:ring-2 focus:ring-orange-400 outline-none text-center"
+                          />
+                        )}
+                        <p className="text-[10px] text-slate-400 italic">
+                          {capeCondition === 'none' ? `無論 ${metricLabel} 高低均可質押。` : capeCondition === 'lt' ? `僅當 ${metricLabel} < ${capeConditionValue} 時才質押（市場合理/低估時借款）。` : `僅當 ${metricLabel} > ${capeConditionValue} 時才質押。`}
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {mode === 'historical' ? (
@@ -503,11 +564,18 @@ const App = () => {
 
               <div className="space-y-1">
                 <p className="font-bold text-slate-700">💡 動態提領率（每年重算）</p>
-                <p className="text-xs text-slate-400 mb-1">當年支出 = 當年市值 × CAPE 對應 SWR</p>
+                <p className="text-xs text-slate-400 mb-1">當年支出 = 當年市值 × 估值指標對應 SWR</p>
+                <p className="text-[10px] text-orange-500 font-bold mb-0.5">美股 CAPE（SPY/VT）：</p>
+                <ul className="text-xs text-slate-500 pl-3 space-y-0.5 list-disc list-inside mb-1">
+                  <li>CAPE &gt; 30 → <span className="font-bold text-rose-500">4.7%</span> 防守</li>
+                  <li>CAPE 15–30 → <span className="font-bold text-amber-500">5.2%</span> 標準</li>
+                  <li>CAPE ≤ 15 → <span className="font-bold text-emerald-600">6.0%</span> 進攻</li>
+                </ul>
+                <p className="text-[10px] text-emerald-600 font-bold mb-0.5">台灣 P/E（0050）：</p>
                 <ul className="text-xs text-slate-500 pl-3 space-y-0.5 list-disc list-inside">
-                  <li>CAPE &gt; 30（昂貴）→ <span className="font-bold text-rose-500">4.7%</span> 防守</li>
-                  <li>CAPE 15–30（合理）→ <span className="font-bold text-amber-500">5.2%</span> 標準</li>
-                  <li>CAPE ≤ 15（便宜）→ <span className="font-bold text-emerald-600">6.0%</span> 進攻</li>
+                  <li>P/E &gt; 20 → <span className="font-bold text-rose-500">4.7%</span> 防守</li>
+                  <li>P/E 13–20 → <span className="font-bold text-amber-500">5.2%</span> 標準</li>
+                  <li>P/E ≤ 13 → <span className="font-bold text-emerald-600">6.0%</span> 進攻</li>
                 </ul>
               </div>
 
@@ -607,11 +675,12 @@ const App = () => {
                             <div className="bg-white p-4 rounded-xl shadow-xl border border-slate-100">
                               <p className="font-black text-slate-800 border-b pb-2 mb-2">{label} 歲 ({d.year}年)</p>
                               <div className="space-y-1 text-sm">
-                                <div className="flex justify-between gap-4"><span>策略模式：</span><span className={`font-bold ${d.strategy === 'Sell Shares' ? 'text-amber-600' : 'text-indigo-600'}`}>{d.strategy === 'Sell Shares' ? `變賣模式（${d.guardrailReason === 'debt-cap' ? '借款上限' : d.guardrailReason === 'cape' ? 'CAPE條件' : '維持率'}）` : '質押模式'}</span></div>
+                                <div className="flex justify-between gap-4"><span>策略模式：</span><span className={`font-bold ${d.strategy === 'Sell Shares' ? 'text-amber-600' : 'text-indigo-600'}`}>{d.strategy === 'Sell Shares' ? `變賣模式（${d.guardrailReason === 'debt-cap' ? '借款上限' : d.guardrailReason === 'valuation' ? '估值條件' : '維持率'}）` : '質押模式'}</span></div>
                                 <div className="flex justify-between gap-4"><span>股票市值：</span><span className="font-bold">${d.portfolio.toLocaleString()}</span></div>
                                 <div className="flex justify-between gap-4"><span>累積負債：</span><span className="font-bold text-rose-500">${d.debt.toLocaleString()}</span></div>
                                 <div className="flex justify-between gap-4 border-t pt-2"><span>淨資產：</span><span className="font-bold text-emerald-600">${d.netAssets.toLocaleString()}</span></div>
                                 {d.cape != null && <div className="flex justify-between gap-4"><span>CAPE：</span><span className="font-bold text-orange-500">{d.cape}</span></div>}
+                                {d.pe != null && <div className="flex justify-between gap-4"><span>台灣P/E：</span><span className="font-bold text-emerald-600">{d.pe}</span></div>}
                                 {d.withdrawalPct != null && <div className="flex justify-between gap-4"><span>提領率：</span><span className="font-bold text-teal-600">{d.withdrawalPct}%</span></div>}
                                 {d.spending != null && <div className="flex justify-between gap-4"><span>提領金額：</span><span className="font-bold text-teal-700">${d.spending.toLocaleString()}</span></div>}
                               </div>
@@ -628,44 +697,54 @@ const App = () => {
               </div>
             </div>
 
-            {mode === 'historical' && (
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-bold mb-1">每年 CAPE 與實際提領率</h3>
-                <p className="text-xs text-slate-400 mb-5">提領率 = 當年支出 ÷ 股票市值（質押或賣股均計入）</p>
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={simulationData} margin={{ right: 24 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="year" axisLine={false} tickLine={false} />
-                      <YAxis yAxisId="left" axisLine={false} tickLine={false} domain={[0, 60]} tickFormatter={(v) => `${v}`} label={{ value: 'CAPE', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: '#94a3b8' } }} />
-                      <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} domain={[0, 12]} tickFormatter={(v) => `${v}%`} label={{ value: '提領率', angle: 90, position: 'insideRight', style: { fontSize: 10, fill: '#94a3b8' } }} />
-                      <Tooltip
-                        content={({ active, payload, label }) => {
-                          if (active && payload && payload.length) {
-                            const d = payload[0]?.payload;
-                            return (
-                              <div className="bg-white p-3 rounded-xl shadow-lg border border-slate-100 text-sm">
-                                <p className="font-black text-slate-800 border-b pb-1 mb-2">{label} 年</p>
-                                <div className="flex justify-between gap-4"><span className="text-orange-500">CAPE：</span><span className="font-bold">{d?.cape ?? '—'}</span></div>
-                                <div className="flex justify-between gap-4"><span className="text-teal-600">提領率：</span><span className="font-bold">{d?.withdrawalPct != null ? `${d.withdrawalPct}%` : '—'}</span></div>
-                                <div className="flex justify-between gap-4"><span className="text-teal-700">提領金額：</span><span className="font-bold">{d?.spending != null ? `$${d.spending.toLocaleString()}` : '—'}</span></div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Line yAxisId="left" type="monotone" dataKey="cape" name="CAPE" stroke="#f97316" strokeWidth={2} dot={false} />
-                      <Line yAxisId="right" type="monotone" dataKey="withdrawalPct" name="提領率 (%)" stroke="#14b8a6" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
+            {mode === 'historical' && (() => {
+              const isPEMode = valuationMetric === 'pe' && assetType === '0050';
+              const leftKey = isPEMode ? 'pe' : 'cape';
+              const leftLabel = isPEMode ? '台灣P/E' : 'CAPE';
+              const leftColor = isPEMode ? '#059669' : '#f97316';
+              const leftDomain = isPEMode ? [0, 80] : [0, 60];
+              return (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-bold mb-1">每年 {leftLabel} 與實際提領率</h3>
+                  <p className="text-xs text-slate-400 mb-5">提領率 = 當年支出 ÷ 股票市值（質押或賣股均計入）</p>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={simulationData} margin={{ right: 24 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="year" axisLine={false} tickLine={false} />
+                        <YAxis yAxisId="left" axisLine={false} tickLine={false} domain={leftDomain} tickFormatter={(v) => `${v}`} label={{ value: leftLabel, angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: '#94a3b8' } }} />
+                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} domain={[0, 12]} tickFormatter={(v) => `${v}%`} label={{ value: '提領率', angle: 90, position: 'insideRight', style: { fontSize: 10, fill: '#94a3b8' } }} />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (active && payload && payload.length) {
+                              const d = payload[0]?.payload;
+                              return (
+                                <div className="bg-white p-3 rounded-xl shadow-lg border border-slate-100 text-sm">
+                                  <p className="font-black text-slate-800 border-b pb-1 mb-2">{label} 年</p>
+                                  {isPEMode
+                                    ? <div className="flex justify-between gap-4"><span className="text-emerald-600">台灣P/E：</span><span className="font-bold">{d?.pe ?? '—'}</span></div>
+                                    : <div className="flex justify-between gap-4"><span className="text-orange-500">CAPE：</span><span className="font-bold">{d?.cape ?? '—'}</span></div>
+                                  }
+                                  <div className="flex justify-between gap-4"><span className="text-teal-600">提領率：</span><span className="font-bold">{d?.withdrawalPct != null ? `${d.withdrawalPct}%` : '—'}</span></div>
+                                  <div className="flex justify-between gap-4"><span className="text-teal-700">提領金額：</span><span className="font-bold">{d?.spending != null ? `$${d.spending.toLocaleString()}` : '—'}</span></div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Line yAxisId="left" type="monotone" dataKey={leftKey} name={leftLabel} stroke={leftColor} strokeWidth={2} dot={false} />
+                        <Line yAxisId="right" type="monotone" dataKey="withdrawalPct" name="提領率 (%)" stroke="#14b8a6" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex gap-6 mt-3 justify-center text-xs font-bold">
+                    <span className="flex items-center gap-1" style={{ color: leftColor }}><span className="inline-block w-4 h-0.5" style={{ background: leftColor }}></span> {leftLabel} (左軸)</span>
+                    <span className="flex items-center gap-1 text-teal-600"><span className="inline-block w-4 h-0.5 bg-teal-500"></span> 提領率 % (右軸)</span>
+                  </div>
                 </div>
-                <div className="flex gap-6 mt-3 justify-center text-xs font-bold">
-                  <span className="flex items-center gap-1 text-orange-500"><span className="inline-block w-4 h-0.5 bg-orange-500"></span> CAPE (左軸)</span>
-                  <span className="flex items-center gap-1 text-teal-600"><span className="inline-block w-4 h-0.5 bg-teal-500"></span> 提領率 % (右軸)</span>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
               <h3 className="text-lg font-bold mb-6 text-center">維持率防線與門檻切換</h3>
