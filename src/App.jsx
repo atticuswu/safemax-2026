@@ -70,65 +70,66 @@ const TAIWAN_DATA = {
 // ret = 0.5×SSO + 0.5×SGOV（年化）
 // 2006前：SSO 採 2×S&P500 代理；SGOV 採美國3月短債利率
 // 2006後：SSO 採實際報酬；rebalanced = |SSO年報酬| > 20% 觸發再平衡
+// rebalanceCount = floor(|SSO年報酬| / 20)，估算一年內觸發再平衡次數
 const SSO_SGOV_DATA = {
-  1966: { ret: -7.6,  cpi: 3.01,  rebalanced: true  }, // sso=-20.1(2×-10.06), sgov=4.84
-  1967: { ret: 26.1,  cpi: 2.78,  rebalanced: true  }, // sso=47.96(2×23.98),  sgov=4.32
-  1968: { ret: 13.7,  cpi: 4.27,  rebalanced: true  }, // sso=22.12(2×11.06),  sgov=5.34
-  1969: { ret: -5.2,  cpi: 5.46,  rebalanced: false }, // sso=-17.0(2×-8.50),  sgov=6.67
-  1970: { ret: 7.2,   cpi: 5.92,  rebalanced: false }, // sso=8.02(2×4.01),    sgov=6.46
-  1971: { ret: 16.5,  cpi: 4.30,  rebalanced: true  }, // sso=28.62(2×14.31),  sgov=4.35
-  1972: { ret: 21.0,  cpi: 3.27,  rebalanced: true  }, // sso=37.96(2×18.98),  sgov=4.07
-  1973: { ret: -11.1, cpi: 6.22,  rebalanced: true  }, // sso=-29.32(2×-14.66),sgov=7.04
-  1974: { ret: -22.5, cpi: 11.04, rebalanced: true  }, // sso=-52.94(2×-26.47),sgov=7.90
-  1975: { ret: 40.1,  cpi: 9.14,  rebalanced: true  }, // sso=74.40(2×37.20),  sgov=5.84
-  1976: { ret: 26.3,  cpi: 5.74,  rebalanced: true  }, // sso=47.68(2×23.84),  sgov=4.97
-  1977: { ret: -4.5,  cpi: 6.50,  rebalanced: false }, // sso=-14.36(2×-7.18), sgov=5.27
-  1978: { ret: 10.2,  cpi: 7.62,  rebalanced: false }, // sso=13.12(2×6.56),   sgov=7.19
-  1979: { ret: 23.5,  cpi: 11.25, rebalanced: true  }, // sso=36.88(2×18.44),  sgov=10.04
-  1980: { ret: 38.1,  cpi: 13.58, rebalanced: true  }, // sso=64.84(2×32.42),  sgov=11.43
-  1981: { ret: 2.1,   cpi: 10.33, rebalanced: false }, // sso=-9.82(2×-4.91),  sgov=14.08
-  1982: { ret: 26.9,  cpi: 6.13,  rebalanced: true  }, // sso=43.10(2×21.55),  sgov=10.61
-  1983: { ret: 26.9,  cpi: 3.21,  rebalanced: true  }, // sso=45.12(2×22.56),  sgov=8.62
-  1984: { ret: 11.0,  cpi: 4.30,  rebalanced: false }, // sso=12.54(2×6.27),   sgov=9.52
-  1985: { ret: 35.5,  cpi: 3.55,  rebalanced: true  }, // sso=63.46(2×31.73),  sgov=7.48
-  1986: { ret: 21.7,  cpi: 1.91,  rebalanced: true  }, // sso=37.34(2×18.67),  sgov=5.98
-  1987: { ret: 8.2,   cpi: 3.66,  rebalanced: false }, // sso=10.50(2×5.25),   sgov=5.82
-  1988: { ret: 20.0,  cpi: 4.08,  rebalanced: true  }, // sso=33.22(2×16.61),  sgov=6.68
-  1989: { ret: 35.7,  cpi: 4.83,  rebalanced: true  }, // sso=63.38(2×31.69),  sgov=8.12
-  1990: { ret: 0.7,   cpi: 5.40,  rebalanced: false }, // sso=-6.20(2×-3.10),  sgov=7.51
-  1991: { ret: 33.2,  cpi: 4.23,  rebalanced: true  }, // sso=60.94(2×30.47),  sgov=5.42
-  1992: { ret: 9.3,   cpi: 3.03,  rebalanced: false }, // sso=15.24(2×7.62),   sgov=3.44
-  1993: { ret: 11.6,  cpi: 2.95,  rebalanced: true  }, // sso=20.16(2×10.08),  sgov=3.00
-  1994: { ret: 3.5,   cpi: 2.61,  rebalanced: false }, // sso=2.64(2×1.32),    sgov=4.27
-  1995: { ret: 40.3,  cpi: 2.81,  rebalanced: true  }, // sso=75.16(2×37.58),  sgov=5.51
-  1996: { ret: 25.5,  cpi: 2.93,  rebalanced: true  }, // sso=45.92(2×22.96),  sgov=5.02
-  1997: { ret: 35.9,  cpi: 2.34,  rebalanced: true  }, // sso=66.72(2×33.36),  sgov=5.07
-  1998: { ret: 31.0,  cpi: 1.55,  rebalanced: true  }, // sso=57.16(2×28.58),  sgov=4.81
-  1999: { ret: 23.4,  cpi: 2.19,  rebalanced: true  }, // sso=42.08(2×21.04),  sgov=4.66
-  2000: { ret: -6.2,  cpi: 3.38,  rebalanced: false }, // sso=-18.20(2×-9.10), sgov=5.85
-  2001: { ret: -10.2, cpi: 2.83,  rebalanced: true  }, // sso=-23.78(2×-11.89),sgov=3.44
-  2002: { ret: -21.3, cpi: 1.59,  rebalanced: true  }, // sso=-44.20(2×-22.10),sgov=1.62
-  2003: { ret: 29.2,  cpi: 2.27,  rebalanced: true  }, // sso=57.36(2×28.68),  sgov=1.02
-  2004: { ret: 11.6,  cpi: 2.68,  rebalanced: true  }, // sso=21.76(2×10.88),  sgov=1.37
-  2005: { ret: 6.5,   cpi: 3.39,  rebalanced: false }, // sso=9.82(2×4.91),    sgov=3.15
-  2006: { ret: 12.9,  cpi: 3.23,  rebalanced: true  }, // sso=21.0(實際),      sgov=4.73
-  2007: { ret: 6.3,   cpi: 2.85,  rebalanced: false }, // sso=8.2,             sgov=4.36
-  2008: { ret: -32.2, cpi: 3.85,  rebalanced: true  }, // sso=-65.7,           sgov=1.37
-  2009: { ret: 27.2,  cpi: -0.34, rebalanced: true  }, // sso=54.3,            sgov=0.15
-  2010: { ret: 13.8,  cpi: 1.64,  rebalanced: true  }, // sso=27.4,            sgov=0.14
-  2011: { ret: 0.8,   cpi: 3.16,  rebalanced: false }, // sso=1.6,             sgov=0.06
-  2012: { ret: 17.1,  cpi: 2.07,  rebalanced: true  }, // sso=34.1,            sgov=0.09
-  2013: { ret: 34.2,  cpi: 1.46,  rebalanced: true  }, // sso=68.4,            sgov=0.06
-  2014: { ret: 11.9,  cpi: 1.62,  rebalanced: true  }, // sso=23.7,            sgov=0.04
-  2015: { ret: 1.1,   cpi: 0.12,  rebalanced: false }, // sso=2.1,             sgov=0.05
-  2016: { ret: 11.5,  cpi: 1.26,  rebalanced: true  }, // sso=22.6,            sgov=0.32
-  2017: { ret: 22.9,  cpi: 2.13,  rebalanced: true  }, // sso=44.9,            sgov=0.93
-  2018: { ret: -4.2,  cpi: 2.44,  rebalanced: false }, // sso=-10.3,           sgov=2.00
-  2019: { ret: 33.5,  cpi: 1.81,  rebalanced: true  }, // sso=64.9,            sgov=2.09
-  2020: { ret: 19.0,  cpi: 1.23,  rebalanced: true  }, // sso=37.7,            sgov=0.37
-  2021: { ret: 30.7,  cpi: 4.70,  rebalanced: true  }, // sso=61.3,            sgov=0.05
-  2022: { ret: -17.9, cpi: 8.00,  rebalanced: true  }, // sso=-37.8,           sgov=2.00
-  2023: { ret: 29.3,  cpi: 4.10,  rebalanced: true  }, // sso=53.6,            sgov=5.00
+  1966: { ret: -7.6,  cpi: 3.01,  rebalanced: true,  rebalanceCount: 1 }, // sso=-20.1%
+  1967: { ret: 26.1,  cpi: 2.78,  rebalanced: true,  rebalanceCount: 2 }, // sso=47.96%
+  1968: { ret: 13.7,  cpi: 4.27,  rebalanced: true,  rebalanceCount: 1 }, // sso=22.12%
+  1969: { ret: -5.2,  cpi: 5.46,  rebalanced: false, rebalanceCount: 0 }, // sso=-17.0%
+  1970: { ret: 7.2,   cpi: 5.92,  rebalanced: false, rebalanceCount: 0 }, // sso=8.02%
+  1971: { ret: 16.5,  cpi: 4.30,  rebalanced: true,  rebalanceCount: 1 }, // sso=28.62%
+  1972: { ret: 21.0,  cpi: 3.27,  rebalanced: true,  rebalanceCount: 1 }, // sso=37.96%
+  1973: { ret: -11.1, cpi: 6.22,  rebalanced: true,  rebalanceCount: 1 }, // sso=-29.32%
+  1974: { ret: -22.5, cpi: 11.04, rebalanced: true,  rebalanceCount: 2 }, // sso=-52.94%
+  1975: { ret: 40.1,  cpi: 9.14,  rebalanced: true,  rebalanceCount: 3 }, // sso=74.40%
+  1976: { ret: 26.3,  cpi: 5.74,  rebalanced: true,  rebalanceCount: 2 }, // sso=47.68%
+  1977: { ret: -4.5,  cpi: 6.50,  rebalanced: false, rebalanceCount: 0 }, // sso=-14.36%
+  1978: { ret: 10.2,  cpi: 7.62,  rebalanced: false, rebalanceCount: 0 }, // sso=13.12%
+  1979: { ret: 23.5,  cpi: 11.25, rebalanced: true,  rebalanceCount: 1 }, // sso=36.88%
+  1980: { ret: 38.1,  cpi: 13.58, rebalanced: true,  rebalanceCount: 3 }, // sso=64.84%
+  1981: { ret: 2.1,   cpi: 10.33, rebalanced: false, rebalanceCount: 0 }, // sso=-9.82%
+  1982: { ret: 26.9,  cpi: 6.13,  rebalanced: true,  rebalanceCount: 2 }, // sso=43.10%
+  1983: { ret: 26.9,  cpi: 3.21,  rebalanced: true,  rebalanceCount: 2 }, // sso=45.12%
+  1984: { ret: 11.0,  cpi: 4.30,  rebalanced: false, rebalanceCount: 0 }, // sso=12.54%
+  1985: { ret: 35.5,  cpi: 3.55,  rebalanced: true,  rebalanceCount: 3 }, // sso=63.46%
+  1986: { ret: 21.7,  cpi: 1.91,  rebalanced: true,  rebalanceCount: 1 }, // sso=37.34%
+  1987: { ret: 8.2,   cpi: 3.66,  rebalanced: false, rebalanceCount: 0 }, // sso=10.50%
+  1988: { ret: 20.0,  cpi: 4.08,  rebalanced: true,  rebalanceCount: 1 }, // sso=33.22%
+  1989: { ret: 35.7,  cpi: 4.83,  rebalanced: true,  rebalanceCount: 3 }, // sso=63.38%
+  1990: { ret: 0.7,   cpi: 5.40,  rebalanced: false, rebalanceCount: 0 }, // sso=-6.20%
+  1991: { ret: 33.2,  cpi: 4.23,  rebalanced: true,  rebalanceCount: 3 }, // sso=60.94%
+  1992: { ret: 9.3,   cpi: 3.03,  rebalanced: false, rebalanceCount: 0 }, // sso=15.24%
+  1993: { ret: 11.6,  cpi: 2.95,  rebalanced: true,  rebalanceCount: 1 }, // sso=20.16%
+  1994: { ret: 3.5,   cpi: 2.61,  rebalanced: false, rebalanceCount: 0 }, // sso=2.64%
+  1995: { ret: 40.3,  cpi: 2.81,  rebalanced: true,  rebalanceCount: 3 }, // sso=75.16%
+  1996: { ret: 25.5,  cpi: 2.93,  rebalanced: true,  rebalanceCount: 2 }, // sso=45.92%
+  1997: { ret: 35.9,  cpi: 2.34,  rebalanced: true,  rebalanceCount: 3 }, // sso=66.72%
+  1998: { ret: 31.0,  cpi: 1.55,  rebalanced: true,  rebalanceCount: 2 }, // sso=57.16%
+  1999: { ret: 23.4,  cpi: 2.19,  rebalanced: true,  rebalanceCount: 2 }, // sso=42.08%
+  2000: { ret: -6.2,  cpi: 3.38,  rebalanced: false, rebalanceCount: 0 }, // sso=-18.20%
+  2001: { ret: -10.2, cpi: 2.83,  rebalanced: true,  rebalanceCount: 1 }, // sso=-23.78%
+  2002: { ret: -21.3, cpi: 1.59,  rebalanced: true,  rebalanceCount: 2 }, // sso=-44.20%
+  2003: { ret: 29.2,  cpi: 2.27,  rebalanced: true,  rebalanceCount: 2 }, // sso=57.36%
+  2004: { ret: 11.6,  cpi: 2.68,  rebalanced: true,  rebalanceCount: 1 }, // sso=21.76%
+  2005: { ret: 6.5,   cpi: 3.39,  rebalanced: false, rebalanceCount: 0 }, // sso=9.82%
+  2006: { ret: 12.9,  cpi: 3.23,  rebalanced: true,  rebalanceCount: 1 }, // sso=21.0%
+  2007: { ret: 6.3,   cpi: 2.85,  rebalanced: false, rebalanceCount: 0 }, // sso=8.2%
+  2008: { ret: -32.2, cpi: 3.85,  rebalanced: true,  rebalanceCount: 3 }, // sso=-65.7%
+  2009: { ret: 27.2,  cpi: -0.34, rebalanced: true,  rebalanceCount: 2 }, // sso=54.3%
+  2010: { ret: 13.8,  cpi: 1.64,  rebalanced: true,  rebalanceCount: 1 }, // sso=27.4%
+  2011: { ret: 0.8,   cpi: 3.16,  rebalanced: false, rebalanceCount: 0 }, // sso=1.6%
+  2012: { ret: 17.1,  cpi: 2.07,  rebalanced: true,  rebalanceCount: 1 }, // sso=34.1%
+  2013: { ret: 34.2,  cpi: 1.46,  rebalanced: true,  rebalanceCount: 3 }, // sso=68.4%
+  2014: { ret: 11.9,  cpi: 1.62,  rebalanced: true,  rebalanceCount: 1 }, // sso=23.7%
+  2015: { ret: 1.1,   cpi: 0.12,  rebalanced: false, rebalanceCount: 0 }, // sso=2.1%
+  2016: { ret: 11.5,  cpi: 1.26,  rebalanced: true,  rebalanceCount: 1 }, // sso=22.6%
+  2017: { ret: 22.9,  cpi: 2.13,  rebalanced: true,  rebalanceCount: 2 }, // sso=44.9%
+  2018: { ret: -4.2,  cpi: 2.44,  rebalanced: false, rebalanceCount: 0 }, // sso=-10.3%
+  2019: { ret: 33.5,  cpi: 1.81,  rebalanced: true,  rebalanceCount: 3 }, // sso=64.9%
+  2020: { ret: 19.0,  cpi: 1.23,  rebalanced: true,  rebalanceCount: 1 }, // sso=37.7%
+  2021: { ret: 30.7,  cpi: 4.70,  rebalanced: true,  rebalanceCount: 3 }, // sso=61.3%
+  2022: { ret: -17.9, cpi: 8.00,  rebalanced: true,  rebalanceCount: 1 }, // sso=-37.8%
+  2023: { ret: 29.3,  cpi: 4.10,  rebalanced: true,  rebalanceCount: 2 }, // sso=53.6%
 };
 
 const ASSET_CONFIG = {
@@ -263,13 +264,14 @@ const App = () => {
       const currentAge = rAge + i;
 
       // ── Step 0: 取得當年報酬、通膨、再平衡旗標 ──
-      let annualRet, annualInf, rebalanced = false;
+      let annualRet, annualInf, rebalanced = false, rebalanceCount = 0;
       if (mode === 'historical') {
         if (assetType === 'SSO+SGOV') {
           const d = SSO_SGOV_DATA[yearLabel] || SSO_SGOV_DATA[2023];
           annualRet = d.ret;
           annualInf = d.cpi;
           rebalanced = d.rebalanced;
+          rebalanceCount = d.rebalanceCount || 0;
         } else {
           const dataSource = assetType === 'VT' ? VT_DATA : assetType === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
           const fallback = assetType === 'VT' ? VT_DATA[2023] : assetType === '0050' ? TAIWAN_DATA[2023] : HISTORICAL_DATA[2023];
@@ -335,6 +337,7 @@ const App = () => {
         cpi: parseFloat(annualInf.toFixed(1)),
         cpiAdjusted: cpiAdjusted,
         rebalanced: rebalanced,
+        rebalanceCount: rebalanceCount,
         withdrawalPct: withdrawalPct,
       });
 
@@ -758,7 +761,9 @@ const App = () => {
                   <p className="text-xs font-bold text-violet-500 uppercase tracking-wider">SSO 再平衡年度</p>
                   <h4 className="text-2xl font-black text-violet-600 mt-1">{rebalancedYears.length} 年</h4>
                   <p className="text-[11px] text-slate-400 mt-2 leading-relaxed break-words">
-                    {rebalancedYears.length > 0 ? rebalancedYears.join('、') : '無'}
+                    {simulationData.filter(d => d.rebalanced).length > 0
+                      ? simulationData.filter(d => d.rebalanced).map(d => `${d.year}(${d.rebalanceCount}次)`).join('、')
+                      : '無'}
                   </p>
                 </div>
               )}
