@@ -66,10 +66,76 @@ const TAIWAN_DATA = {
   2021: { ret: 22.9,  cpi: 2.0,  pe: 20 }, 2022: { ret: -22.6, cpi: 3.0,  pe: 12 }, 2023: { ret: 26.3,  cpi: 2.5,  pe: 22 }
 };
 
+// 50% SSO + 50% SGOV 回測資料
+// ret = 0.5×SSO + 0.5×SGOV（年化）
+// 2006前：SSO 採 2×S&P500 代理；SGOV 採美國3月短債利率
+// 2006後：SSO 採實際報酬；rebalanced = |SSO年報酬| > 20% 觸發再平衡
+const SSO_SGOV_DATA = {
+  1966: { ret: -7.6,  cpi: 3.01,  rebalanced: true  }, // sso=-20.1(2×-10.06), sgov=4.84
+  1967: { ret: 26.1,  cpi: 2.78,  rebalanced: true  }, // sso=47.96(2×23.98),  sgov=4.32
+  1968: { ret: 13.7,  cpi: 4.27,  rebalanced: true  }, // sso=22.12(2×11.06),  sgov=5.34
+  1969: { ret: -5.2,  cpi: 5.46,  rebalanced: false }, // sso=-17.0(2×-8.50),  sgov=6.67
+  1970: { ret: 7.2,   cpi: 5.92,  rebalanced: false }, // sso=8.02(2×4.01),    sgov=6.46
+  1971: { ret: 16.5,  cpi: 4.30,  rebalanced: true  }, // sso=28.62(2×14.31),  sgov=4.35
+  1972: { ret: 21.0,  cpi: 3.27,  rebalanced: true  }, // sso=37.96(2×18.98),  sgov=4.07
+  1973: { ret: -11.1, cpi: 6.22,  rebalanced: true  }, // sso=-29.32(2×-14.66),sgov=7.04
+  1974: { ret: -22.5, cpi: 11.04, rebalanced: true  }, // sso=-52.94(2×-26.47),sgov=7.90
+  1975: { ret: 40.1,  cpi: 9.14,  rebalanced: true  }, // sso=74.40(2×37.20),  sgov=5.84
+  1976: { ret: 26.3,  cpi: 5.74,  rebalanced: true  }, // sso=47.68(2×23.84),  sgov=4.97
+  1977: { ret: -4.5,  cpi: 6.50,  rebalanced: false }, // sso=-14.36(2×-7.18), sgov=5.27
+  1978: { ret: 10.2,  cpi: 7.62,  rebalanced: false }, // sso=13.12(2×6.56),   sgov=7.19
+  1979: { ret: 23.5,  cpi: 11.25, rebalanced: true  }, // sso=36.88(2×18.44),  sgov=10.04
+  1980: { ret: 38.1,  cpi: 13.58, rebalanced: true  }, // sso=64.84(2×32.42),  sgov=11.43
+  1981: { ret: 2.1,   cpi: 10.33, rebalanced: false }, // sso=-9.82(2×-4.91),  sgov=14.08
+  1982: { ret: 26.9,  cpi: 6.13,  rebalanced: true  }, // sso=43.10(2×21.55),  sgov=10.61
+  1983: { ret: 26.9,  cpi: 3.21,  rebalanced: true  }, // sso=45.12(2×22.56),  sgov=8.62
+  1984: { ret: 11.0,  cpi: 4.30,  rebalanced: false }, // sso=12.54(2×6.27),   sgov=9.52
+  1985: { ret: 35.5,  cpi: 3.55,  rebalanced: true  }, // sso=63.46(2×31.73),  sgov=7.48
+  1986: { ret: 21.7,  cpi: 1.91,  rebalanced: true  }, // sso=37.34(2×18.67),  sgov=5.98
+  1987: { ret: 8.2,   cpi: 3.66,  rebalanced: false }, // sso=10.50(2×5.25),   sgov=5.82
+  1988: { ret: 20.0,  cpi: 4.08,  rebalanced: true  }, // sso=33.22(2×16.61),  sgov=6.68
+  1989: { ret: 35.7,  cpi: 4.83,  rebalanced: true  }, // sso=63.38(2×31.69),  sgov=8.12
+  1990: { ret: 0.7,   cpi: 5.40,  rebalanced: false }, // sso=-6.20(2×-3.10),  sgov=7.51
+  1991: { ret: 33.2,  cpi: 4.23,  rebalanced: true  }, // sso=60.94(2×30.47),  sgov=5.42
+  1992: { ret: 9.3,   cpi: 3.03,  rebalanced: false }, // sso=15.24(2×7.62),   sgov=3.44
+  1993: { ret: 11.6,  cpi: 2.95,  rebalanced: true  }, // sso=20.16(2×10.08),  sgov=3.00
+  1994: { ret: 3.5,   cpi: 2.61,  rebalanced: false }, // sso=2.64(2×1.32),    sgov=4.27
+  1995: { ret: 40.3,  cpi: 2.81,  rebalanced: true  }, // sso=75.16(2×37.58),  sgov=5.51
+  1996: { ret: 25.5,  cpi: 2.93,  rebalanced: true  }, // sso=45.92(2×22.96),  sgov=5.02
+  1997: { ret: 35.9,  cpi: 2.34,  rebalanced: true  }, // sso=66.72(2×33.36),  sgov=5.07
+  1998: { ret: 31.0,  cpi: 1.55,  rebalanced: true  }, // sso=57.16(2×28.58),  sgov=4.81
+  1999: { ret: 23.4,  cpi: 2.19,  rebalanced: true  }, // sso=42.08(2×21.04),  sgov=4.66
+  2000: { ret: -6.2,  cpi: 3.38,  rebalanced: false }, // sso=-18.20(2×-9.10), sgov=5.85
+  2001: { ret: -10.2, cpi: 2.83,  rebalanced: true  }, // sso=-23.78(2×-11.89),sgov=3.44
+  2002: { ret: -21.3, cpi: 1.59,  rebalanced: true  }, // sso=-44.20(2×-22.10),sgov=1.62
+  2003: { ret: 29.2,  cpi: 2.27,  rebalanced: true  }, // sso=57.36(2×28.68),  sgov=1.02
+  2004: { ret: 11.6,  cpi: 2.68,  rebalanced: true  }, // sso=21.76(2×10.88),  sgov=1.37
+  2005: { ret: 6.5,   cpi: 3.39,  rebalanced: false }, // sso=9.82(2×4.91),    sgov=3.15
+  2006: { ret: 12.9,  cpi: 3.23,  rebalanced: true  }, // sso=21.0(實際),      sgov=4.73
+  2007: { ret: 6.3,   cpi: 2.85,  rebalanced: false }, // sso=8.2,             sgov=4.36
+  2008: { ret: -32.2, cpi: 3.85,  rebalanced: true  }, // sso=-65.7,           sgov=1.37
+  2009: { ret: 27.2,  cpi: -0.34, rebalanced: true  }, // sso=54.3,            sgov=0.15
+  2010: { ret: 13.8,  cpi: 1.64,  rebalanced: true  }, // sso=27.4,            sgov=0.14
+  2011: { ret: 0.8,   cpi: 3.16,  rebalanced: false }, // sso=1.6,             sgov=0.06
+  2012: { ret: 17.1,  cpi: 2.07,  rebalanced: true  }, // sso=34.1,            sgov=0.09
+  2013: { ret: 34.2,  cpi: 1.46,  rebalanced: true  }, // sso=68.4,            sgov=0.06
+  2014: { ret: 11.9,  cpi: 1.62,  rebalanced: true  }, // sso=23.7,            sgov=0.04
+  2015: { ret: 1.1,   cpi: 0.12,  rebalanced: false }, // sso=2.1,             sgov=0.05
+  2016: { ret: 11.5,  cpi: 1.26,  rebalanced: true  }, // sso=22.6,            sgov=0.32
+  2017: { ret: 22.9,  cpi: 2.13,  rebalanced: true  }, // sso=44.9,            sgov=0.93
+  2018: { ret: -4.2,  cpi: 2.44,  rebalanced: false }, // sso=-10.3,           sgov=2.00
+  2019: { ret: 33.5,  cpi: 1.81,  rebalanced: true  }, // sso=64.9,            sgov=2.09
+  2020: { ret: 19.0,  cpi: 1.23,  rebalanced: true  }, // sso=37.7,            sgov=0.37
+  2021: { ret: 30.7,  cpi: 4.70,  rebalanced: true  }, // sso=61.3,            sgov=0.05
+  2022: { ret: -17.9, cpi: 8.00,  rebalanced: true  }, // sso=-37.8,           sgov=2.00
+  2023: { ret: 29.3,  cpi: 4.10,  rebalanced: true  }, // sso=53.6,            sgov=5.00
+};
+
 const ASSET_CONFIG = {
-  SPY: { label: 'SPY', sublabel: 'S&P 500', color: '#6366f1', proxyNote: null },
-  VT:  { label: 'VT',  sublabel: '全球股市', color: '#0891b2', proxyNote: '2008前採 MSCI World 代理' },
-  '0050': { label: '0050', sublabel: '台灣50', color: '#059669', proxyNote: '2003前採台灣加權指數代理' },
+  SPY:        { label: 'SPY',      sublabel: 'S&P 500',    color: '#6366f1', proxyNote: null },
+  VT:         { label: 'VT',       sublabel: '全球股市',   color: '#0891b2', proxyNote: '2008前採 MSCI World 代理' },
+  '0050':     { label: '0050',     sublabel: '台灣50',     color: '#059669', proxyNote: '2003前採台灣加權指數代理' },
+  'SSO+SGOV': { label: 'SSO+SGOV', sublabel: '2×槓桿+短債', color: '#7c3aed', proxyNote: '2006前採2×S&P500代理；SGOV採美國短債利率' },
 };
 
 const App = () => {
@@ -196,6 +262,34 @@ const App = () => {
       const yearLabel = startYear + i;
       const currentAge = rAge + i;
 
+      // ── Step 0: 取得當年報酬、通膨、再平衡旗標 ──
+      let annualRet, annualInf, rebalanced = false;
+      if (mode === 'historical') {
+        if (assetType === 'SSO+SGOV') {
+          const d = SSO_SGOV_DATA[yearLabel] || SSO_SGOV_DATA[2023];
+          annualRet = d.ret;
+          annualInf = d.cpi;
+          rebalanced = d.rebalanced;
+        } else {
+          const dataSource = assetType === 'VT' ? VT_DATA : assetType === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
+          const fallback = assetType === 'VT' ? VT_DATA[2023] : assetType === '0050' ? TAIWAN_DATA[2023] : HISTORICAL_DATA[2023];
+          const hData = dataSource[yearLabel] || fallback;
+          annualRet = hData.ret;
+          annualInf = hData.cpi;
+        }
+      } else {
+        annualRet = tGrowth;
+        annualInf = 2.5;
+      }
+
+      // ── Step 1: CPI 通膨調整提領金額 ──
+      // 實質報酬為負（報酬 < CPI）→ 提領額上浮 CPI%，維持購買力
+      const cpiAdjusted = annualRet < annualInf;
+      if (cpiAdjusted) {
+        currentSpending = currentSpending * (1 + annualInf / 100);
+      }
+
+      // ── Step 2: 判斷質押資格（任一否決則停止質押）──
       const maintenanceRatio = accumulatedDebt === 0 ? Infinity : (currentPortfolio / accumulatedDebt) * 100;
       // CAPE 固定用美股 Shiller CAPE（所有資產的 SWR 參考基準）
       const currentCape = mode === 'historical' ? (HISTORICAL_DATA[yearLabel] || HISTORICAL_DATA[2023]).cape : capeRatio;
@@ -203,13 +297,17 @@ const App = () => {
       const currentPE = mode === 'historical' && assetType === '0050'
         ? ((TAIWAN_DATA[yearLabel] || TAIWAN_DATA[2023]).pe)
         : null;
-      // 質押條件使用的估值指標值
       const metricValue = (valuationMetric === 'pe' && assetType === '0050') ? currentPE : currentCape;
       const capeBlocked = capeCondition === 'lt' ? metricValue >= capeConditionValue
                         : capeCondition === 'gt' ? metricValue <= capeConditionValue
                         : false;
-      const isGuardrailMode = maintenanceRatio < mThreshold || accumulatedDebt >= maxDebt || capeBlocked;
-      const guardrailReason = capeBlocked ? "valuation" : accumulatedDebt >= maxDebt ? "debt-cap" : maintenanceRatio < mThreshold ? "maintenance" : null;
+      const cpiBlocked = annualInf > 4; // 高通膨（CPI>4%）禁止新增質押
+      const isGuardrailMode = maintenanceRatio < mThreshold || accumulatedDebt >= maxDebt || capeBlocked || cpiBlocked;
+      const guardrailReason = cpiBlocked ? "cpi"
+        : capeBlocked ? "valuation"
+        : accumulatedDebt >= maxDebt ? "debt-cap"
+        : maintenanceRatio < mThreshold ? "maintenance"
+        : null;
       const strategy = isGuardrailMode ? "Sell Shares" : "Lending";
 
       const dividends = currentPortfolio * (dYield / 100);
@@ -234,9 +332,13 @@ const App = () => {
         guardrailReason: guardrailReason,
         cape: capeVal,
         pe: currentPE,
+        cpi: parseFloat(annualInf.toFixed(1)),
+        cpiAdjusted: cpiAdjusted,
+        rebalanced: rebalanced,
         withdrawalPct: withdrawalPct,
       });
 
+      // ── Step 3: 執行提領 ──
       if (isGuardrailMode) {
         const requiredCash = currentSpending + (netDividend < 0 ? Math.abs(netDividend) : 0);
         const actualSellAmount = netDividend > 0 ? Math.max(0, currentSpending - netDividend) : requiredCash;
@@ -248,21 +350,10 @@ const App = () => {
         }
       }
 
-      let annualRet, annualInf;
-      if (mode === 'historical') {
-        const dataSource = assetType === 'VT' ? VT_DATA : assetType === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
-        const fallback = assetType === 'VT' ? VT_DATA[2023] : assetType === '0050' ? TAIWAN_DATA[2023] : HISTORICAL_DATA[2023];
-        const hData = dataSource[yearLabel] || fallback;
-        annualRet = hData.ret;
-        annualInf = hData.cpi;
-      } else {
-        annualRet = tGrowth;
-        annualInf = 2.5;
-      }
-
+      // ── Step 4: 應用年度報酬 ──
       currentPortfolio = currentPortfolio * (1 + annualRet / 100);
 
-      // 動態提領：每年依當年估值指標（CAPE 或 P/E）重新計算 SWR
+      // ── Step 5: 動態提領 — 依估值指標重算下一年 SWR ──
       const nextYearLabel = startYear + i + 1;
       const nextCape = mode === 'historical'
         ? (HISTORICAL_DATA[nextYearLabel] || HISTORICAL_DATA[2023]).cape
@@ -290,6 +381,8 @@ const App = () => {
 
   const lendingYears = simulationData.filter(d => d.strategy === 'Lending').map(d => d.year);
   const sellYears = simulationData.filter(d => d.strategy === 'Sell Shares').map(d => d.year);
+  const rebalancedYears = simulationData.filter(d => d.rebalanced).map(d => d.year);
+  const cpiBlockedYears = simulationData.filter(d => d.guardrailReason === 'cpi').map(d => d.year);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-900">
@@ -378,7 +471,7 @@ const App = () => {
                 {/* 資產選擇 */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-600 uppercase">回測指數</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {Object.entries(ASSET_CONFIG).map(([key, cfg]) => (
                       <button
                         key={key}
@@ -585,12 +678,15 @@ const App = () => {
               </div>
 
               <div className="space-y-1">
-                <p className="font-bold text-slate-700">🛡 雙重護欄（任一觸發切換賣股）</p>
+                <p className="font-bold text-slate-700">🛡 四重護欄（任一觸發切換賣股）</p>
                 <ul className="text-xs text-slate-500 pl-3 space-y-0.5 list-disc list-inside">
                   <li><span className="font-bold">維持率護欄：</span>市值 / 借款 &lt; 300%</li>
                   <li><span className="font-bold">債務天花板：</span>借款 ≥ 初始資產 × 25%</li>
+                  <li><span className="font-bold">通膨護欄：</span>CPI &gt; 4%（高通膨期禁止新增借款）</li>
+                  <li><span className="font-bold">估值條件：</span>CAPE / P/E 超出使用者設定範圍</li>
                 </ul>
                 <p className="text-xs text-slate-400 mt-1">賣股時先用股息抵利息，剩餘缺口才賣股。護欄解除後自動恢復質押。</p>
+                <p className="text-xs text-slate-400">另：報酬 &lt; CPI 時，當年提領額自動上浮 CPI% 以維持實質購買力。</p>
               </div>
 
               <div className="space-y-1">
@@ -656,6 +752,27 @@ const App = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {assetType === 'SSO+SGOV' && (
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-violet-100">
+                  <p className="text-xs font-bold text-violet-500 uppercase tracking-wider">SSO 再平衡年度</p>
+                  <h4 className="text-2xl font-black text-violet-600 mt-1">{rebalancedYears.length} 年</h4>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed break-words">
+                    {rebalancedYears.length > 0 ? rebalancedYears.join('、') : '無'}
+                  </p>
+                </div>
+              )}
+              {cpiBlockedYears.length > 0 && (
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-rose-100">
+                  <p className="text-xs font-bold text-rose-400 uppercase tracking-wider">通膨攔截年度 (CPI &gt;4%)</p>
+                  <h4 className="text-2xl font-black text-rose-600 mt-1">{cpiBlockedYears.length} 年</h4>
+                  <p className="text-[11px] text-slate-400 mt-2 leading-relaxed break-words">
+                    {cpiBlockedYears.join('、')}
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
               <h3 className="text-lg font-bold mb-6 flex items-center justify-between">
                 <span>資產成長趨勢 (含策略切換點)</span>
@@ -684,12 +801,15 @@ const App = () => {
                             <div className="bg-white p-4 rounded-xl shadow-xl border border-slate-100">
                               <p className="font-black text-slate-800 border-b pb-2 mb-2">{label} 歲 ({d.year}年)</p>
                               <div className="space-y-1 text-sm">
-                                <div className="flex justify-between gap-4"><span>策略模式：</span><span className={`font-bold ${d.strategy === 'Sell Shares' ? 'text-amber-600' : 'text-indigo-600'}`}>{d.strategy === 'Sell Shares' ? `變賣模式（${d.guardrailReason === 'debt-cap' ? '借款上限' : d.guardrailReason === 'valuation' ? '估值條件' : '維持率'}）` : '質押模式'}</span></div>
+                                <div className="flex justify-between gap-4"><span>策略模式：</span><span className={`font-bold ${d.strategy === 'Sell Shares' ? 'text-amber-600' : 'text-indigo-600'}`}>{d.strategy === 'Sell Shares' ? `變賣模式（${d.guardrailReason === 'debt-cap' ? '借款上限' : d.guardrailReason === 'valuation' ? '估值條件' : d.guardrailReason === 'cpi' ? `通膨CPI ${d.cpi}%` : '維持率'}）` : '質押模式'}</span></div>
                                 <div className="flex justify-between gap-4"><span>股票市值：</span><span className="font-bold">${d.portfolio.toLocaleString()}</span></div>
                                 <div className="flex justify-between gap-4"><span>累積負債：</span><span className="font-bold text-rose-500">${d.debt.toLocaleString()}</span></div>
                                 <div className="flex justify-between gap-4 border-t pt-2"><span>淨資產：</span><span className="font-bold text-emerald-600">${d.netAssets.toLocaleString()}</span></div>
                                 {d.cape != null && <div className="flex justify-between gap-4"><span>CAPE：</span><span className="font-bold text-orange-500">{d.cape}</span></div>}
                                 {d.pe != null && <div className="flex justify-between gap-4"><span>台灣P/E：</span><span className="font-bold text-emerald-600">{d.pe}</span></div>}
+                                {d.cpi != null && <div className="flex justify-between gap-4"><span>CPI通膨：</span><span className={`font-bold ${d.cpi > 4 ? 'text-rose-500' : 'text-slate-500'}`}>{d.cpi}%{d.cpi > 4 ? ' ⚠' : ''}</span></div>}
+                                {d.cpiAdjusted && <div className="flex justify-between gap-4"><span>提領調整：</span><span className="font-bold text-rose-400">+{d.cpi}% (通膨補償)</span></div>}
+                                {d.rebalanced && <div className="flex justify-between gap-4"><span>SSO再平衡：</span><span className="font-bold text-violet-600">已觸發</span></div>}
                                 {d.withdrawalPct != null && <div className="flex justify-between gap-4"><span>提領率：</span><span className="font-bold text-teal-600">{d.withdrawalPct}%</span></div>}
                                 {d.spending != null && <div className="flex justify-between gap-4"><span>提領金額：</span><span className="font-bold text-teal-700">${d.spending.toLocaleString()}</span></div>}
                               </div>
@@ -734,6 +854,7 @@ const App = () => {
                                     ? <div className="flex justify-between gap-4"><span className="text-emerald-600">台灣P/E：</span><span className="font-bold">{d?.pe ?? '—'}</span></div>
                                     : <div className="flex justify-between gap-4"><span className="text-orange-500">CAPE：</span><span className="font-bold">{d?.cape ?? '—'}</span></div>
                                   }
+                                  {d?.cpi != null && <div className="flex justify-between gap-4"><span className={d.cpi > 4 ? 'text-rose-500 font-bold' : 'text-slate-400'}>CPI：</span><span className={`font-bold ${d.cpi > 4 ? 'text-rose-500' : ''}`}>{d.cpi}%{d.cpi > 4 ? ' ⚠' : ''}</span></div>}
                                   <div className="flex justify-between gap-4"><span className="text-teal-600">提領率：</span><span className="font-bold">{d?.withdrawalPct != null ? `${d.withdrawalPct}%` : '—'}</span></div>
                                   <div className="flex justify-between gap-4"><span className="text-teal-700">提領金額：</span><span className="font-bold">{d?.spending != null ? `$${d.spending.toLocaleString()}` : '—'}</span></div>
                                 </div>
