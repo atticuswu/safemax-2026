@@ -387,6 +387,76 @@ const App = () => {
   const rebalancedYears = simulationData.filter(d => d.rebalanced).map(d => d.year);
   const cpiBlockedYears = simulationData.filter(d => d.guardrailReason === 'cpi').map(d => d.year);
 
+  // ── 四資產比較圖：以相同參數跑所有資產，統一用 CAPE 作 SWR 基準 ──
+  const comparisonData = useMemo(() => {
+    const pv = Number(portfolioValue) || 0;
+    const rAge = Number(retirementAge) || 0;
+    const dYield = Number(dividendYield) || 0;
+    const iRate = Number(interestRate) || 0;
+    const tGrowth = Number(theoreticalGrowth) || 0;
+    const mThreshold = Number(maintenanceThreshold) || 300;
+    const maxDebtRatioNum = maxDebtRatio === '' ? 25 : Number(maxDebtRatio);
+    const maxDebt = pv * (maxDebtRatioNum / 100);
+
+    const simulate = (asset) => {
+      const initCape = mode === 'historical' ? (HISTORICAL_DATA[startYear] || HISTORICAL_DATA[2023]).cape : Number(capeRatio) || 30;
+      const initSWR = initCape > 30 ? 4.7 : initCape > 15 ? 5.2 : 6.0;
+      let currentPortfolio = pv;
+      let accumulatedDebt = 0;
+      let currentSpending = pv * initSWR / 100;
+      const result = [];
+
+      for (let i = 0; i <= yearsToSimulate; i++) {
+        const yearLabel = startYear + i;
+        let annualRet, annualInf;
+        if (mode === 'historical') {
+          if (asset === 'SSO+SGOV') {
+            const d = SSO_SGOV_DATA[yearLabel] || SSO_SGOV_DATA[2023];
+            annualRet = d.ret; annualInf = d.cpi;
+          } else {
+            const src = asset === 'VT' ? VT_DATA : asset === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
+            const fb  = asset === 'VT' ? VT_DATA[2023] : asset === '0050' ? TAIWAN_DATA[2023] : HISTORICAL_DATA[2023];
+            const hd  = src[yearLabel] || fb;
+            annualRet = hd.ret; annualInf = hd.cpi;
+          }
+        } else { annualRet = tGrowth; annualInf = 2.5; }
+
+        if (annualRet < annualInf) currentSpending *= (1 + annualInf / 100);
+
+        const mRatio = accumulatedDebt === 0 ? Infinity : (currentPortfolio / accumulatedDebt) * 100;
+        const cape   = mode === 'historical' ? (HISTORICAL_DATA[yearLabel] || HISTORICAL_DATA[2023]).cape : Number(capeRatio) || 30;
+        const capeBlk = capeCondition === 'lt' ? cape >= capeConditionValue : capeCondition === 'gt' ? cape <= capeConditionValue : false;
+        const isGuard = mRatio < mThreshold || accumulatedDebt >= maxDebt || capeBlk || annualInf > 4;
+
+        result.push({ age: rAge + i, year: mode === 'historical' ? yearLabel : i, portfolio: Math.round(currentPortfolio) });
+
+        const dividends = currentPortfolio * (dYield / 100);
+        const interest  = accumulatedDebt * (iRate / 100);
+        const netDiv    = dividends - interest;
+        if (isGuard) {
+          currentPortfolio -= netDiv > 0 ? Math.max(0, currentSpending - netDiv) : currentSpending + Math.abs(netDiv);
+        } else {
+          accumulatedDebt += currentSpending + (netDiv < 0 ? Math.abs(netDiv) : 0);
+        }
+        currentPortfolio *= (1 + annualRet / 100);
+        const nc = mode === 'historical' ? (HISTORICAL_DATA[startYear + i + 1] || HISTORICAL_DATA[2023]).cape : Number(capeRatio) || 30;
+        currentSpending = currentPortfolio * (nc > 30 ? 4.7 : nc > 15 ? 5.2 : 6.0) / 100;
+        if (currentPortfolio <= 0) { currentPortfolio = 0; break; }
+      }
+      return result;
+    };
+
+    const r = { SPY: simulate('SPY'), VT: simulate('VT'), '0050': simulate('0050'), 'SSO+SGOV': simulate('SSO+SGOV') };
+    return r.SPY.map((d, i) => ({
+      age: d.age,
+      year: d.year,
+      SPY:       r.SPY[i]?.portfolio ?? null,
+      VT:        r.VT[i]?.portfolio ?? null,
+      '0050':    r['0050'][i]?.portfolio ?? null,
+      'SSO+SGOV': r['SSO+SGOV'][i]?.portfolio ?? null,
+    }));
+  }, [mode, startYear, portfolioValue, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio]);
+
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-900">
 
@@ -829,6 +899,64 @@ const App = () => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+
+            {/* ── 四資產比較圖 ── */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <h3 className="text-lg font-bold mb-1">四大資產回測比較</h3>
+              <p className="text-xs text-slate-400 mb-5">相同策略參數、相同護欄條件，各資產組合市值走勢對比（均以 CAPE 為 SWR 基準）</p>
+              <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={comparisonData} margin={{ right: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="age" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/10000).toFixed(0)}萬`} />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload?.length) return null;
+                        const d = payload[0]?.payload;
+                        return (
+                          <div className="bg-white p-3 rounded-xl shadow-xl border border-slate-100 text-sm min-w-[160px]">
+                            <p className="font-black text-slate-800 border-b pb-1 mb-2">{label} 歲 {d?.year ? `(${d.year})` : ''}</p>
+                            {[
+                              { key: 'SPY',       color: '#6366f1', label: 'SPY (S&P 500)' },
+                              { key: 'VT',        color: '#0891b2', label: 'VT (全球股市)' },
+                              { key: '0050',      color: '#059669', label: '0050 (台灣50)' },
+                              { key: 'SSO+SGOV',  color: '#7c3aed', label: 'SSO+SGOV' },
+                            ].map(({ key, color, label: lbl }) => d?.[key] != null && (
+                              <div key={key} className="flex justify-between gap-4 items-center">
+                                <span className="flex items-center gap-1" style={{ color }}>
+                                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }}></span>
+                                  {lbl}
+                                </span>
+                                <span className="font-bold text-slate-700">${d[key].toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }}
+                    />
+                    <Line type="monotone" dataKey="SPY"      name="SPY"      stroke="#6366f1" strokeWidth={2.5} dot={false} connectNulls />
+                    <Line type="monotone" dataKey="VT"       name="VT"       stroke="#0891b2" strokeWidth={2.5} dot={false} connectNulls />
+                    <Line type="monotone" dataKey="0050"     name="0050"     stroke="#059669" strokeWidth={2.5} dot={false} connectNulls />
+                    <Line type="monotone" dataKey="SSO+SGOV" name="SSO+SGOV" stroke="#7c3aed" strokeWidth={2.5} dot={false} connectNulls strokeDasharray="6 3" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 justify-center text-xs font-bold">
+                {[
+                  { color: '#6366f1', label: 'SPY・S&P 500' },
+                  { color: '#0891b2', label: 'VT・全球股市' },
+                  { color: '#059669', label: '0050・台灣50' },
+                  { color: '#7c3aed', label: 'SSO+SGOV・2×槓桿+短債', dashed: true },
+                ].map(({ color, label: lbl, dashed }) => (
+                  <span key={lbl} className="flex items-center gap-1.5" style={{ color }}>
+                    <span className="inline-block w-5 h-0.5" style={{ background: color, ...(dashed ? { backgroundImage: `repeating-linear-gradient(90deg,${color} 0,${color} 6px,transparent 6px,transparent 9px)`, background: 'none' } : {}) }}></span>
+                    {lbl}
+                  </span>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 italic text-center mt-2">* SSO+SGOV 虛線表示含 2× 槓桿衰減估算，歷史數據為代理回測</p>
             </div>
 
             {mode === 'historical' && (() => {
