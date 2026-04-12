@@ -158,6 +158,7 @@ const App = () => {
   const [assetType, setAssetType] = useState('SPY');
   const [valuationMetric, setValuationMetric] = useState('cape'); // 'cape' | 'pe'
   const [customInitialRate, setCustomInitialRate] = useState(''); // '' = auto from CAPE/P/E
+  const [minSpending, setMinSpending] = useState(''); // '' = no floor
   const [showSubscribe, setShowSubscribe] = useState(false);
   const [subEmail, setSubEmail] = useState('');
   const [subStatus, setSubStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
@@ -292,6 +293,11 @@ const App = () => {
       if (cpiAdjusted) {
         currentSpending = currentSpending * (1 + annualInf / 100);
       }
+      // 最低提領保障：無論估值如何壓縮，不低於使用者設定下限
+      const minSpendingNum = minSpending !== '' ? Number(minSpending) : 0;
+      if (minSpendingNum > 0 && currentSpending < minSpendingNum) {
+        currentSpending = minSpendingNum;
+      }
 
       // ── Step 2: 判斷質押資格（任一否決則停止質押）──
       const maintenanceRatio = accumulatedDebt === 0 ? Infinity : (currentPortfolio / accumulatedDebt) * 100;
@@ -373,6 +379,10 @@ const App = () => {
         nextSWR = nextCape > 30 ? 4.7 : nextCape > 15 ? 5.2 : 6.0;
       }
       currentSpending = currentPortfolio * (nextSWR / 100);
+      // 套用最低提領下限
+      if (minSpendingNum > 0 && currentSpending < minSpendingNum) {
+        currentSpending = minSpendingNum;
+      }
 
       if (currentPortfolio <= 0) {
         currentPortfolio = 0;
@@ -380,7 +390,7 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric, customInitialRate]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric, customInitialRate, minSpending]);
 
   const latestData = simulationData[simulationData.length - 1];
 
@@ -711,36 +721,70 @@ const App = () => {
                   <SliderGroup label="質押利率" value={interestRate} min={1} max={8} step={0.1} onChange={setInterestRate} suffix="%" />
                 </div>
 
-                {/* 第一年自訂提領率 */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
-                    <Zap size={12} className="text-indigo-400" /> 第一年提領率（選填）
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min={0}
-                      max={20}
-                      step={0.1}
-                      value={customInitialRate}
-                      onChange={(e) => setCustomInitialRate(e.target.value)}
-                      placeholder={`自動 ${suggestedSWR.toFixed(1)}%`}
-                      className="w-full p-3 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-xl font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-indigo-300"
-                    />
-                    {customInitialRate !== '' && (
-                      <button
-                        onClick={() => setCustomInitialRate('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
-                        title="清除，回到自動"
-                      >✕</button>
-                    )}
+                {/* 第一年自訂提領率 & 最低提領金額 — 並排 */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* 第一年提領率 */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                      <Zap size={12} className="text-indigo-400" /> 第一年提領率
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        max={20}
+                        step={0.1}
+                        value={customInitialRate}
+                        onChange={(e) => setCustomInitialRate(e.target.value)}
+                        placeholder={`自動 ${suggestedSWR.toFixed(1)}%`}
+                        className="w-full p-3 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-xl font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-indigo-300 text-sm"
+                      />
+                      {customInitialRate !== '' && (
+                        <button
+                          onClick={() => setCustomInitialRate('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                          title="清除"
+                        >✕</button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic leading-tight">
+                      {customInitialRate !== ''
+                        ? `第一年 ${Number(customInitialRate).toFixed(1)}%，後續動態調整。`
+                        : `留空依估值自動設定。`}
+                    </p>
                   </div>
-                  <p className="text-[10px] text-slate-400 italic">
-                    {customInitialRate !== ''
-                      ? `第一年以 ${Number(customInitialRate).toFixed(1)}% 提領，後續依 CAPE/P/E 動態調整。`
-                      : `留空則依估值自動設定（目前建議 ${suggestedSWR.toFixed(1)}%）。`}
-                  </p>
+
+                  {/* 最低提領金額 */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                      <AlertTriangle size={12} className="text-emerald-500" /> 最低提領金額
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        step={10000}
+                        value={minSpending}
+                        onChange={(e) => setMinSpending(e.target.value)}
+                        placeholder="不設下限"
+                        className="w-full p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl font-bold text-center outline-none focus:ring-2 focus:ring-emerald-400 placeholder:text-emerald-300 text-sm"
+                      />
+                      {minSpending !== '' && (
+                        <button
+                          onClick={() => setMinSpending('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                          title="清除"
+                        >✕</button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic leading-tight">
+                      {minSpending !== ''
+                        ? `每年至少提領 $${Number(minSpending).toLocaleString()}。`
+                        : `留空則無下限保障。`}
+                    </p>
+                  </div>
                 </div>
 
                 <button
