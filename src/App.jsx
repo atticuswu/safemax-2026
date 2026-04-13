@@ -139,13 +139,21 @@ const ASSET_CONFIG = {
   'SSO+SGOV': { label: 'SSO+SGOV', sublabel: '2×槓桿+短債', color: '#7c3aed', proxyNote: '2006前採2×S&P500代理；SGOV採美國短債利率' },
 };
 
+// 各資產預設股息率
+const ASSET_DIVIDEND_DEFAULTS = {
+  SPY:        1.0,
+  VT:         1.0,
+  '0050':     2.5,
+  'SSO+SGOV': 1.0,
+};
+
 const App = () => {
   const [mode, setMode] = useState('historical');
   const [startYear, setStartYear] = useState(1999);
   const [yearInputStr, setYearInputStr] = useState('1999');
   const [portfolioValue, setPortfolioValue] = useState(10000000);
   const [capeRatio, setCapeRatio] = useState(30);
-  const [dividendYield, setDividendYield] = useState(3.0);
+  const [dividendYield, setDividendYield] = useState(1.0);
   const [interestRate, setInterestRate] = useState(2.5);
   const [retirementAge, setRetirementAge] = useState(50);
   const [deathAge, setDeathAge] = useState(79);
@@ -188,6 +196,11 @@ const App = () => {
   // 切換非 0050 資產時，估值指標自動回到 CAPE
   useEffect(() => {
     if (assetType !== '0050') setValuationMetric('cape');
+  }, [assetType]);
+
+  // 切換資產時，股息率自動更新為該資產的預設值
+  useEffect(() => {
+    setDividendYield(ASSET_DIVIDEND_DEFAULTS[assetType] ?? 1.0);
   }, [assetType]);
 
   useEffect(() => {
@@ -412,7 +425,6 @@ const App = () => {
   const comparisonData = useMemo(() => {
     const pv = Number(portfolioValue) || 0;
     const rAge = Number(retirementAge) || 0;
-    const dYield = Number(dividendYield) || 0;
     const iRate = Number(interestRate) || 0;
     const tGrowth = Number(theoreticalGrowth) || 0;
     const mThreshold = Number(maintenanceThreshold) || 300;
@@ -420,6 +432,7 @@ const App = () => {
     const maxDebt = pv * (maxDebtRatioNum / 100);
 
     const simulate = (asset) => {
+      const dYield = ASSET_DIVIDEND_DEFAULTS[asset] ?? 1.0; // 各資產使用各自預設股息率
       const initCape = mode === 'historical' ? (HISTORICAL_DATA[startYear] || HISTORICAL_DATA[2023]).cape : Number(capeRatio) || 30;
       const initSWR = initCape > 30 ? 4.7 : initCape > 15 ? 5.2 : 6.0;
       let currentPortfolio = pv;
@@ -476,7 +489,7 @@ const App = () => {
       '0050':    r['0050'][i]?.portfolio ?? null,
       'SSO+SGOV': r['SSO+SGOV'][i]?.portfolio ?? null,
     }));
-  }, [mode, startYear, portfolioValue, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio]);
+  }, [mode, startYear, portfolioValue, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-900">
