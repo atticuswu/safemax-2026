@@ -159,6 +159,7 @@ const App = () => {
   const [valuationMetric, setValuationMetric] = useState('cape'); // 'cape' | 'pe'
   const [customInitialRate, setCustomInitialRate] = useState(''); // '' = auto from CAPE/P/E
   const [minSpending, setMinSpending] = useState(''); // '' = no floor
+  const [maxSpending, setMaxSpending] = useState(''); // '' = no cap
   const [showSubscribe, setShowSubscribe] = useState(false);
   const [subEmail, setSubEmail] = useState('');
   const [subStatus, setSubStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
@@ -295,8 +296,13 @@ const App = () => {
       }
       // 最低提領保障：無論估值如何壓縮，不低於使用者設定下限
       const minSpendingNum = minSpending !== '' ? Number(minSpending) : 0;
+      const maxSpendingNum = maxSpending !== '' ? Number(maxSpending) : Infinity;
       if (minSpendingNum > 0 && currentSpending < minSpendingNum) {
         currentSpending = minSpendingNum;
+      }
+      // 最高提領上限：避免牛市時過度花費，保留更多資產
+      if (maxSpendingNum < Infinity && currentSpending > maxSpendingNum) {
+        currentSpending = maxSpendingNum;
       }
 
       // ── Step 2: 判斷質押資格（任一否決則停止質押）──
@@ -379,9 +385,12 @@ const App = () => {
         nextSWR = nextCape > 30 ? 4.7 : nextCape > 15 ? 5.2 : 6.0;
       }
       currentSpending = currentPortfolio * (nextSWR / 100);
-      // 套用最低提領下限
+      // 套用最低提領下限 & 最高提領上限
       if (minSpendingNum > 0 && currentSpending < minSpendingNum) {
         currentSpending = minSpendingNum;
+      }
+      if (maxSpendingNum < Infinity && currentSpending > maxSpendingNum) {
+        currentSpending = maxSpendingNum;
       }
 
       if (currentPortfolio <= 0) {
@@ -390,7 +399,7 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric, customInitialRate, minSpending]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric, customInitialRate, minSpending, maxSpending]);
 
   const latestData = simulationData[simulationData.length - 1];
 
@@ -721,8 +730,8 @@ const App = () => {
                   <SliderGroup label="質押利率" value={interestRate} min={1} max={8} step={0.1} onChange={setInterestRate} suffix="%" />
                 </div>
 
-                {/* 第一年自訂提領率 & 最低提領金額 — 並排 */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* 第一年自訂提領率 & 最低/最高提領金額 — 三欄並排 */}
+                <div className="grid grid-cols-3 gap-3">
                   {/* 第一年提領率 */}
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
@@ -783,6 +792,37 @@ const App = () => {
                       {minSpending !== ''
                         ? `每年至少提領 $${Number(minSpending).toLocaleString()}。`
                         : `留空則無下限保障。`}
+                    </p>
+                  </div>
+
+                  {/* 最高提領金額 */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                      <AlertTriangle size={12} className="text-rose-400" /> 最高提領金額
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        step={10000}
+                        value={maxSpending}
+                        onChange={(e) => setMaxSpending(e.target.value)}
+                        placeholder="不設上限"
+                        className="w-full p-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-xl font-bold text-center outline-none focus:ring-2 focus:ring-rose-400 placeholder:text-rose-300 text-sm"
+                      />
+                      {maxSpending !== '' && (
+                        <button
+                          onClick={() => setMaxSpending('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                          title="清除"
+                        >✕</button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic leading-tight">
+                      {maxSpending !== ''
+                        ? `每年最多提領 $${Number(maxSpending).toLocaleString()}。`
+                        : `留空則無上限限制。`}
                     </p>
                   </div>
                 </div>
