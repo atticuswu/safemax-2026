@@ -167,6 +167,7 @@ const App = () => {
   const [assetType, setAssetType] = useState('SPY');
   const [valuationMetric, setValuationMetric] = useState('cape'); // 'cape' | 'pe'
   const [customInitialRate, setCustomInitialRate] = useState(''); // '' = auto from CAPE/P/E
+  const [ssoRatio, setSsoRatio] = useState(50); // SSO 佔比 %，SGOV = 100 - ssoRatio
   const [minSpending, setMinSpending] = useState(''); // '' = no floor
   const [maxSpending, setMaxSpending] = useState(''); // '' = no cap
   const [showSubscribe, setShowSubscribe] = useState(false);
@@ -278,8 +279,9 @@ const App = () => {
     let data = [];
 
     // SSO+SGOV 雙帳戶追蹤：SGOV 作為緩衝，賣股優先清 SGOV
-    let ssoValue = assetType === 'SSO+SGOV' ? pv * 0.5 : 0;
-    let sgovValue = assetType === 'SSO+SGOV' ? pv * 0.5 : 0;
+    const ssoTarget = ssoRatio / 100; // 目標 SSO 佔比（0~1）
+    let ssoValue  = assetType === 'SSO+SGOV' ? pv * ssoTarget       : 0;
+    let sgovValue = assetType === 'SSO+SGOV' ? pv * (1 - ssoTarget) : 0;
 
     for (let i = 0; i <= yearsToSimulate; i++) {
       const yearLabel = startYear + i;
@@ -401,13 +403,13 @@ const App = () => {
       if (assetType === 'SSO+SGOV') {
         ssoValue  = ssoValue  * (1 + ssoRet  / 100);
         sgovValue = sgovValue * (1 + sgovRet / 100);
-        // 年末再平衡：SSO 比例偏離 50% 超過 10pp（≥60% 或 ≤40%）時調回 50/50
+        // 年末再平衡：SSO 佔比偏離目標 ±10pp 時，調回目標比例
         const total = ssoValue + sgovValue;
-        const ssoWeight = total > 0 ? ssoValue / total : 0.5;
-        const didRebalance = ssoWeight >= 0.60 || ssoWeight <= 0.40;
+        const ssoWeight = total > 0 ? ssoValue / total : ssoTarget;
+        const didRebalance = ssoWeight >= ssoTarget + 0.10 || ssoWeight <= ssoTarget - 0.10;
         if (didRebalance) {
-          ssoValue  = total * 0.5;
-          sgovValue = total * 0.5;
+          ssoValue  = total * ssoTarget;
+          sgovValue = total * (1 - ssoTarget);
         }
         // 回寫本年資料紀錄（年末計算後才確定）
         data[data.length - 1].rebalanced    = didRebalance;
@@ -446,7 +448,7 @@ const App = () => {
       }
     }
     return data;
-  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric, customInitialRate, minSpending, maxSpending]);
+  }, [mode, startYear, portfolioValue, initialSpending, suggestedSWR, dividendYield, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, assetType, valuationMetric, customInitialRate, minSpending, maxSpending, ssoRatio]);
 
   const latestData = simulationData[simulationData.length - 1];
 
@@ -472,9 +474,10 @@ const App = () => {
       let currentPortfolio = pv;
       let accumulatedDebt = 0;
       let currentSpending = pv * initSWR / 100;
-      // SSO+SGOV 雙帳戶
-      let cSso = asset === 'SSO+SGOV' ? pv * 0.5 : 0;
-      let cSgov = asset === 'SSO+SGOV' ? pv * 0.5 : 0;
+      // SSO+SGOV 雙帳戶（使用當前 ssoRatio）
+      const cSsoTarget = ssoRatio / 100;
+      let cSso  = asset === 'SSO+SGOV' ? pv * cSsoTarget         : 0;
+      let cSgov = asset === 'SSO+SGOV' ? pv * (1 - cSsoTarget)   : 0;
       const result = [];
 
       for (let i = 0; i <= yearsToSimulate; i++) {
@@ -523,8 +526,8 @@ const App = () => {
           cSso  *= (1 + ssoR  / 100);
           cSgov *= (1 + sgovR / 100);
           const tot = cSso + cSgov;
-          const w = tot > 0 ? cSso / tot : 0.5;
-          if (w >= 0.60 || w <= 0.40) { cSso = tot * 0.5; cSgov = tot * 0.5; }
+          const w = tot > 0 ? cSso / tot : cSsoTarget;
+          if (w >= cSsoTarget + 0.10 || w <= cSsoTarget - 0.10) { cSso = tot * cSsoTarget; cSgov = tot * (1 - cSsoTarget); }
           currentPortfolio = cSso + cSgov;
         } else {
           currentPortfolio *= (1 + annualRet / 100);
@@ -545,7 +548,7 @@ const App = () => {
       '0050':    r['0050'][i]?.portfolio ?? null,
       'SSO+SGOV': r['SSO+SGOV'][i]?.portfolio ?? null,
     }));
-  }, [mode, startYear, portfolioValue, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio]);
+  }, [mode, startYear, portfolioValue, interestRate, yearsToSimulate, theoreticalGrowth, retirementAge, maintenanceThreshold, maxDebtRatio, calcVersion, capeCondition, capeConditionValue, capeRatio, ssoRatio]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-900">
@@ -651,6 +654,35 @@ const App = () => {
                     <p className="text-[10px] text-slate-400 italic">⚠ {ASSET_CONFIG[assetType].proxyNote}</p>
                   )}
                 </div>
+
+                {/* SSO:SGOV 比例調整 */}
+                {assetType === 'SSO+SGOV' && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs font-bold text-slate-600 uppercase flex items-center gap-1">
+                        SSO : SGOV 比例
+                      </label>
+                      <span className="text-xs font-black text-violet-600">
+                        {ssoRatio}% : {100 - ssoRatio}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10} max={90} step={5}
+                      value={ssoRatio}
+                      onChange={(e) => setSsoRatio(Number(e.target.value))}
+                      className="w-full accent-violet-600"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-400">
+                      <span>10% SSO</span>
+                      <span className="text-violet-500 font-bold">50:50</span>
+                      <span>90% SSO</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic">
+                      SSO 佔比偏離目標 ±10pp（{Math.max(10, ssoRatio - 10)}%～{Math.min(90, ssoRatio + 10)}%）時觸發再平衡。
+                    </p>
+                  </div>
+                )}
 
                 {/* 估值指標選擇：僅 0050 可選 P/E */}
                 {assetType === '0050' && (
