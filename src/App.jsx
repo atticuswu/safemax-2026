@@ -69,9 +69,9 @@ const TAIWAN_DATA = {
 // 50% SSO + 50% SGOV 回測資料
 // ret = 0.5×SSO + 0.5×SGOV（年化）
 // 2006前：SSO 採 2×S&P500 代理；SGOV 採美國3月短債利率
-// 2006後：SSO 採實際報酬；rebalanced = |SSO年報酬| > 20% 觸發再平衡
-// rebalanceCount = floor(|SSO年報酬| / 20)，估算一年內觸發再平衡次數
-// sgov = 當年美國短債利率；ret（混合）= 0.5*sso + 0.5*sgov（已棄用，保留供參考）
+// 2006後：SSO 採實際報酬
+// 再平衡條件：年末 SSO 佔比 ≥60% 或 ≤40% 時調回 50/50（動態計算，不讀 rebalanced 欄位）
+// sgov = 當年美國短債利率；sso+sgov 混合報酬 = 0.5*sso + 0.5*sgov
 const SSO_SGOV_DATA = {
   1966: { sso: -20.1,  sgov:  4.9,  cpi: 3.01,  rebalanced: true,  rebalanceCount: 1 },
   1967: { sso:  47.96, sgov:  4.24, cpi: 2.78,  rebalanced: true,  rebalanceCount: 2 },
@@ -295,8 +295,7 @@ const App = () => {
           sgovRet = d.sgov;
           annualRet = ssoRet * 0.5 + sgovRet * 0.5; // 混合報酬（供 CPI 比較）
           annualInf = d.cpi;
-          rebalanced = d.rebalanced;
-          rebalanceCount = d.rebalanceCount || 0;
+          // rebalanced / rebalanceCount 改為年末動態計算（見 Step 4）
           currentPortfolio = ssoValue + sgovValue; // 同步總資產
         } else {
           const dataSource = assetType === 'VT' ? VT_DATA : assetType === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
@@ -402,12 +401,17 @@ const App = () => {
       if (assetType === 'SSO+SGOV') {
         ssoValue  = ssoValue  * (1 + ssoRet  / 100);
         sgovValue = sgovValue * (1 + sgovRet / 100);
-        // 年末再平衡：|SSO 報酬| > 20% 時，將總資產調回 50/50
-        if (rebalanced) {
-          const total = ssoValue + sgovValue;
+        // 年末再平衡：SSO 比例偏離 50% 超過 10pp（≥60% 或 ≤40%）時調回 50/50
+        const total = ssoValue + sgovValue;
+        const ssoWeight = total > 0 ? ssoValue / total : 0.5;
+        const didRebalance = ssoWeight >= 0.60 || ssoWeight <= 0.40;
+        if (didRebalance) {
           ssoValue  = total * 0.5;
           sgovValue = total * 0.5;
         }
+        // 回寫本年資料紀錄（年末計算後才確定）
+        data[data.length - 1].rebalanced    = didRebalance;
+        data[data.length - 1].rebalanceCount = didRebalance ? 1 : 0;
         currentPortfolio = ssoValue + sgovValue;
       } else {
         currentPortfolio = currentPortfolio * (1 + annualRet / 100);
@@ -462,21 +466,26 @@ const App = () => {
     const maxDebt = pv * (maxDebtRatioNum / 100);
 
     const simulate = (asset) => {
-      const dYield = ASSET_DIVIDEND_DEFAULTS[asset] ?? 1.0; // 各資產使用各自預設股息率
+      const dYield = ASSET_DIVIDEND_DEFAULTS[asset] ?? 1.0;
       const initCape = mode === 'historical' ? (HISTORICAL_DATA[startYear] || HISTORICAL_DATA[2023]).cape : Number(capeRatio) || 30;
       const initSWR = initCape > 30 ? 4.7 : initCape > 15 ? 5.2 : 6.0;
       let currentPortfolio = pv;
       let accumulatedDebt = 0;
       let currentSpending = pv * initSWR / 100;
+      // SSO+SGOV 雙帳戶
+      let cSso = asset === 'SSO+SGOV' ? pv * 0.5 : 0;
+      let cSgov = asset === 'SSO+SGOV' ? pv * 0.5 : 0;
       const result = [];
 
       for (let i = 0; i <= yearsToSimulate; i++) {
         const yearLabel = startYear + i;
-        let annualRet, annualInf;
+        let annualRet, annualInf, ssoR = 0, sgovR = 0;
         if (mode === 'historical') {
           if (asset === 'SSO+SGOV') {
             const d = SSO_SGOV_DATA[yearLabel] || SSO_SGOV_DATA[2023];
-            annualRet = d.ret; annualInf = d.cpi;
+            ssoR = d.sso; sgovR = d.sgov;
+            annualRet = ssoR * 0.5 + sgovR * 0.5; annualInf = d.cpi;
+            currentPortfolio = cSso + cSgov;
           } else {
             const src = asset === 'VT' ? VT_DATA : asset === '0050' ? TAIWAN_DATA : HISTORICAL_DATA;
             const fb  = asset === 'VT' ? VT_DATA[2023] : asset === '0050' ? TAIWAN_DATA[2023] : HISTORICAL_DATA[2023];
@@ -498,11 +507,28 @@ const App = () => {
         const interest  = accumulatedDebt * (iRate / 100);
         const netDiv    = dividends - interest;
         if (isGuard) {
-          currentPortfolio -= netDiv > 0 ? Math.max(0, currentSpending - netDiv) : currentSpending + Math.abs(netDiv);
+          const sellAmt = netDiv > 0 ? Math.max(0, currentSpending - netDiv) : currentSpending + Math.abs(netDiv);
+          if (asset === 'SSO+SGOV') {
+            const fromSgov = Math.min(cSgov, sellAmt);
+            cSgov -= fromSgov;
+            cSso = Math.max(0, cSso - Math.max(0, sellAmt - fromSgov));
+            currentPortfolio = cSso + cSgov;
+          } else {
+            currentPortfolio -= sellAmt;
+          }
         } else {
           accumulatedDebt += currentSpending + (netDiv < 0 ? Math.abs(netDiv) : 0);
         }
-        currentPortfolio *= (1 + annualRet / 100);
+        if (asset === 'SSO+SGOV') {
+          cSso  *= (1 + ssoR  / 100);
+          cSgov *= (1 + sgovR / 100);
+          const tot = cSso + cSgov;
+          const w = tot > 0 ? cSso / tot : 0.5;
+          if (w >= 0.60 || w <= 0.40) { cSso = tot * 0.5; cSgov = tot * 0.5; }
+          currentPortfolio = cSso + cSgov;
+        } else {
+          currentPortfolio *= (1 + annualRet / 100);
+        }
         const nc = mode === 'historical' ? (HISTORICAL_DATA[startYear + i + 1] || HISTORICAL_DATA[2023]).cape : Number(capeRatio) || 30;
         currentSpending = currentPortfolio * (nc > 30 ? 4.7 : nc > 15 ? 5.2 : 6.0) / 100;
         if (currentPortfolio <= 0) { currentPortfolio = 0; break; }
